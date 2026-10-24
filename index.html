@@ -6,7 +6,7 @@
 <title>Escuela de Inglés y Fonética Clínica Jotavalenzuela | por el Prof. Juan Valenzuela M.</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23004A8F'/><text x='50' y='68' font-size='50' fill='white' text-anchor='middle' font-weight='bold'>JV</text></svg>">
+<link rel="icon" id="dynamicFavicon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23004A8F'/><text x='50' y='68' font-size='50' fill='white' text-anchor='middle' font-weight='bold'>JV</text></svg>">
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
@@ -469,6 +469,45 @@
   .boleta-total-row { background: linear-gradient(135deg, #7c3aed, #a78bfa); color: #fff; padding: 16px 22px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; font-weight: 800; font-size: 1.1rem; margin-top: 16px; }
   .boleta-footer { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 40px; padding-top: 20px; border-top: 1px solid #e2e8f0; }
 
+  .whatsapp-float {
+    position: fixed;
+    width: 60px;
+    height: 60px;
+    bottom: 30px;
+    right: 30px;
+    background-color: #25D366;
+    color: #FFF;
+    border-radius: 50px;
+    text-align: center;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    animation: pulse-wa 2s infinite;
+  }
+  .whatsapp-float:hover { background-color: #128C7E; transform: scale(1.1); color: #FFF; }
+  @keyframes pulse-wa {
+    0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+    70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+  }
+
+  .libro-card { border: 1px solid var(--borde); border-radius: 10px; padding: 12px; background: #fff; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; gap: 8px; flex-wrap: wrap; }
+  .libro-info { flex: 1; font-size: .9rem; font-weight: 600; color: var(--texto); min-width: 150px; }
+  .libro-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .libros-section { margin-top: 16px; padding-top: 14px; border-top: 1px dashed var(--borde); }
+  .libros-section h5 { font-size: .82rem; font-weight: 800; color: var(--slate); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .04em; }
+  .libro-upload-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; align-items: center; }
+  .libro-upload-row input[type="file"] { flex: 1; min-width: 180px; font-size: .82rem; }
+
+  .pago-row { display: grid; grid-template-columns: 1fr 120px 36px; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .pago-row input[type="text"] { padding: 9px 12px; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: .9rem; width: 100%; }
+  .pago-row input[type="number"] { padding: 9px 12px; border: 1.5px solid var(--borde); border-radius: 8px; font-family: inherit; font-size: .9rem; text-align: right; width: 100%; }
+  .pago-row button { background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; border-radius: 8px; cursor: pointer; font-size: 1.1rem; padding: 6px; line-height: 1; }
+  .pago-row button:hover { background: #fecaca; }
+
   @media print {
     body * { visibility: hidden; }
     .rc-preview-container, .rc-preview-container *, .boleta-preview-container, .boleta-preview-container * { visibility: visible; }
@@ -640,6 +679,7 @@
         <button class="dash-tab" data-atab="asistencia">📅 Mi asistencia</button>
         <button class="dash-tab" data-atab="reportcard">📄 Recojo de Report Card</button>
         <button class="dash-tab" data-atab="matricula">🎫 Matrícula</button>
+        <button class="dash-tab" data-atab="libros">📚 Mis libros</button>
       </div>
       <div class="dash-contenido">
         <div class="resumen-grid">
@@ -702,6 +742,11 @@
             <div id="studentMatriculaCursos"></div>
           </div>
         </div>
+        <div class="panel" id="panel-libros">
+          <h4 style="color:var(--azul);margin-bottom:14px;font-size:1rem;font-weight:800;">📚 Libros del Ciclo</h4>
+          <p style="color:var(--gris);font-size:.9rem;margin-bottom:18px;">Libros asignados a tus grupos.</p>
+          <div id="studentLibrosLista"></div>
+        </div>
       </div>
     </div>
 
@@ -725,6 +770,9 @@
         <button class="dash-tab" data-dtab="reportcard">📄 Generar Report Card</button>
         <button class="dash-tab" data-dtab="historial">📚 Historial de Reportes</button>
         <button class="dash-tab" data-dtab="pago">💰 Pago Docente</button>
+        <button class="dash-tab" data-dtab="acceso_alumno">🔑 Acceder a Alumno</button>
+        <button class="dash-tab" data-dtab="libros_grupos">📖 Libros por Grupo</button>
+        <button class="dash-tab" data-dtab="solicitudes">📝 Solicitudes</button>
       </div>
       <div class="dash-contenido">
         <div class="aviso-tiempo-real"><span class="punto-live"></span> Solo ves los grupos y alumnos que el administrador te asignó.</div>
@@ -878,6 +926,149 @@
             </div>
           </div>
         </div>
+                <!-- NUEVOS PANELES DOCENTE -->
+        <div class="panel" id="dpanel-acceso_alumno">
+          <h4 style="color:var(--morado);margin-bottom:10px;font-size:1rem;font-weight:800;">🔑 Acceder a Cuenta de Alumno</h4>
+          <p style="color:var(--gris);font-size:.88rem;margin-bottom:18px;">Entra directamente a la cuenta de un alumno para asistirlo.</p>
+          <div class="tform">
+            <div class="campo"><label>Selecciona al alumno</label><select id="dAccesoAlumnoSelect"><option value="">Selecciona...</option></select></div>
+            <div class="tform-acciones"><button class="btn btn-azul" id="btnEntrarAlumno">Entrar a la cuenta</button></div>
+          </div>
+        </div>
+        
+        <div class="panel" id="dpanel-libros_grupos">
+          <h4 style="color:var(--morado);margin-bottom:10px;font-size:1rem;font-weight:800;">📖 Libros por Grupo</h4>
+          <p style="color:var(--gris);font-size:.88rem;margin-bottom:18px;">Libros cargados por la administración para tus grupos.</p>
+          <div id="dLibrosGruposLista"></div>
+        </div>
+
+        <div class="panel" id="dpanel-solicitudes">
+          <h4 style="color:var(--morado);margin-bottom:10px;font-size:1rem;font-weight:800;">📝 Solicitudes / Iniciativa Docente</h4>
+          <div class="tform">
+            <form id="formSolicitudDocente">
+              <div class="campo">
+                <label>Acción <span class="req">*</span></label>
+                <select id="solTipo" required>
+                  <option value="">Selecciona...</option>
+                  <option value="Justificación de ausencia/tardanza">Justificación de ausencia/tardanza</option>
+                  <option value="Iniciativa de proyecto">Iniciativa de proyecto</option>
+                  <option value="Recomendación a la institución">Recomendación a la institución</option>
+                </select>
+              </div>
+              <div class="campo"><label>Mensaje / Detalle</label><textarea id="solMensaje" placeholder="Escribe tu mensaje aquí..."></textarea></div>
+              <div class="campo"><label>O subir archivo (PDF, DOCX, TXT)</label><input type="file" id="solArchivo" accept=".pdf,.doc,.docx,.txt"></div>
+              <div class="tform-acciones"><button type="submit" class="btn btn-verde">Enviar Solicitud</button></div>
+            </form>
+            <div class="mensaje-exito" id="solMsg">✅ Solicitud enviada.</div>
+          </div>
+          <h4 style="color:var(--morado);margin-bottom:14px;font-size:1rem;font-weight:800;">Mis solicitudes enviadas</h4>
+          <div id="listaSolicitudesDocente"></div>
+        </div>
+
+      </div> <!-- Cierra dash-contenido docente -->
+    </div> <!-- Cierra dashboardDocente -->
+
+    <!-- DASHBOARD TALENTO -->
+    <div class="dashboard" id="dashboardTalento">
+      <div class="dash-top talento">
+        <div class="dash-user">
+          <div class="dash-avatar" id="iconoAvatarTalento">🌟</div>
+          <div><h3>Portal Talento</h3><p>Gestión integral · Jotavalenzuela</p></div>
+        </div>
+        <div class="dash-live"><span class="punto-live"></span><span>En vivo · <span id="relojTal">--:--:--</span></span></div>
+        <button class="dash-salir" id="btnSalirTal">Cerrar sesión</button>
+      </div>
+      <div class="dash-tabs talento-tabs">
+        <button class="dash-tab activo" data-taltab="admin">⚙️ Administrativo</button>
+        <button class="dash-tab" data-taltab="contabilidad">💰 Contabilidad y Finanzas</button>
+        <button class="dash-tab" data-taltab="direccion">🎯 Dirección</button>
+        <button class="dash-tab" data-taltab="marketing">📣 Marketing</button>
+      </div>
+      <div class="dash-contenido">
+
+        <!-- SUBPORTAL ADMINISTRATIVO -->
+        <div class="panel activo" id="tal-panel-admin">
+          <div class="dash-tabs sub-tabs">
+            <button class="dash-tab activo" data-admtab="alumnos">🎓 Alumnos</button>
+            <button class="dash-tab" data-admtab="docentes">👨‍🏫 Docentes</button>
+            <button class="dash-tab" data-admtab="grupos">📚 Grupos</button>
+            <button class="dash-tab" data-admtab="matriculas">📋 Matrículas</button>
+            <button class="dash-tab" data-admtab="programacion">🗓️ Programación</button>
+            <button class="dash-tab" data-admtab="examenes">📝 Exámenes</button>
+            <button class="dash-tab" data-admtab="asistencia">📅 Asistencia</button>
+            <button class="dash-tab" data-admtab="pago_docente">💰 Gestor Pago Docente</button>
+            <button class="dash-tab" data-admtab="membrete">🖼️ Membrete</button>
+            <button class="dash-tab" data-admtab="fundador">👤 Foto Fundador</button>
+            <button class="dash-tab" data-admtab="resumen">📊 Resumen</button>
+          </div>
+          <div class="aviso-tiempo-real"><span class="punto-live"></span> Solo el administrador crea cuentas, grupos, cursos y exámenes.</div>
+
+          <!-- Alumnos, Docentes, Grupos, Matriculas, Programacion, Examenes, Asistencia, Membrete, Fundador, Resumen panels -->
+
+          <!-- ... PANELES ADMIN ... -->
+
+          <!-- GESTOR PAGO DOCENTE -->
+          <div class="panel" id="adm-panel-pago_docente">...</div>
+          
+          <!-- MEMBRETE (con favicon) -->
+          <div class="panel" id="adm-panel-membrete">...</div>
+
+          <!-- RESÚMEN -->
+          <div class="panel" id="adm-panel-resumen">...</div>
+        </div>
+        <!-- SUBPORTAL CONTABILIDAD -->
+        <div class="panel" id="tal-panel-contabilidad">...</div>
+        <!-- SUBPORTAL DIRECCIÓN -->
+        <div class="panel" id="tal-panel-direccion">...</div>
+        <!-- SUBPORTAL MARKETING -->
+        <div class="panel" id="tal-panel-marketing">...</div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Modales -->
+...
+</body>
+</html>
+        <!-- NUEVOS PANELES DOCENTE -->
+        <div class="panel" id="dpanel-acceso_alumno">
+          <h4 style="color:var(--morado);margin-bottom:10px;font-size:1rem;font-weight:800;">🔑 Acceder a Cuenta de Alumno</h4>
+          <p style="color:var(--gris);font-size:.88rem;margin-bottom:18px;">Entra directamente a la cuenta de un alumno para asistirlo.</p>
+          <div class="tform">
+            <div class="campo"><label>Selecciona al alumno</label><select id="dAccesoAlumnoSelect"><option value="">Selecciona...</option></select></div>
+            <div class="tform-acciones"><button class="btn btn-azul" id="btnEntrarAlumno">Entrar a la cuenta</button></div>
+          </div>
+        </div>
+        
+        <div class="panel" id="dpanel-libros_grupos">
+          <h4 style="color:var(--morado);margin-bottom:10px;font-size:1rem;font-weight:800;">📖 Libros por Grupo</h4>
+          <p style="color:var(--gris);font-size:.88rem;margin-bottom:18px;">Libros cargados por la administración para tus grupos.</p>
+          <div id="dLibrosGruposLista"></div>
+        </div>
+
+        <div class="panel" id="dpanel-solicitudes">
+          <h4 style="color:var(--morado);margin-bottom:10px;font-size:1rem;font-weight:800;">📝 Solicitudes / Iniciativa Docente</h4>
+          <div class="tform">
+            <form id="formSolicitudDocente">
+              <div class="campo">
+                <label>Acción <span class="req">*</span></label>
+                <select id="solTipo" required>
+                  <option value="">Selecciona...</option>
+                  <option value="Justificación de ausencia/tardanza">Justificación de ausencia/tardanza</option>
+                  <option value="Iniciativa de proyecto">Iniciativa de proyecto</option>
+                  <option value="Recomendación a la institución">Recomendación a la institución</option>
+                </select>
+              </div>
+              <div class="campo"><label>Mensaje / Detalle</label><textarea id="solMensaje" placeholder="Escribe tu mensaje aquí..."></textarea></div>
+              <div class="campo"><label>O subir archivo (PDF, DOCX, TXT)</label><input type="file" id="solArchivo" accept=".pdf,.doc,.docx,.txt"></div>
+              <div class="tform-acciones"><button type="submit" class="btn btn-verde">Enviar Solicitud</button></div>
+            </form>
+            <div class="mensaje-exito" id="solMsg">✅ Solicitud enviada.</div>
+          </div>
+          <h4 style="color:var(--morado);margin-bottom:14px;font-size:1rem;font-weight:800;">Mis solicitudes enviadas</h4>
+          <div id="listaSolicitudesDocente"></div>
+        </div>
+
       </div>
     </div>
 
@@ -909,6 +1100,7 @@
             <button class="dash-tab" data-admtab="programacion">🗓️ Programación</button>
             <button class="dash-tab" data-admtab="examenes">📝 Exámenes</button>
             <button class="dash-tab" data-admtab="asistencia">📅 Asistencia</button>
+            <button class="dash-tab" data-admtab="pago_docente">💰 Gestor Pago Docente</button>
             <button class="dash-tab" data-admtab="membrete">🖼️ Membrete</button>
             <button class="dash-tab" data-admtab="fundador">👤 Foto Fundador</button>
             <button class="dash-tab" data-admtab="resumen">📊 Resumen</button>
@@ -999,15 +1191,11 @@
             <div class="tform admin-form">
               <h4>➕ Crear nuevo grupo</h4>
               <form id="admNewGroupForm" class="tform-grid">
-                <div class="campo"><label>Nombre del grupo <span class="req">*</span></label><input type="text" id="admGroupNombre" placeholder="Ej: Basic A" required></div>
                 <div class="campo"><label>Programa <span class="req">*</span></label><input type="text" id="admGroupPrograma" placeholder="Ej: Basic" required></div>
-                <div class="campo"><label>Nivel <span class="req">*</span></label>
-                  <select id="admGroupNivel" required><option value="">Selecciona nivel</option><option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="teens">Teens</option></select>
-                </div>
+                <div class="campo"><label>Nivel (texto libre) <span class="req">*</span></label><input type="text" id="admGroupNivel" placeholder="Ej: Básico / B1 / Intermedio" required></div>
                 <div class="campo"><label>Frecuencia <span class="req">*</span></label><input type="text" id="admGroupFrecuencia" placeholder="Ej: 2 veces por semana" required></div>
                 <div class="campo"><label>Horario <span class="req">*</span></label><input type="text" id="admGroupHorario" placeholder="Ej: 19:00-21:00" required></div>
-                <div class="campo"><label>Total de horas por ciclo <span class="req">*</span></label><input type="number" id="admGroupTotalHoras" placeholder="Ej: 40" min="1" required></div>
-                <div class="campo"><label>Docente <span class="req">*</span></label><select id="admGroupTeacher" required><option value="">Selecciona docente</option></select></div>
+                <div class="campo completo"><label>Docente <span class="req">*</span></label><select id="admGroupTeacher" required><option value="">Selecciona docente</option></select></div>
                 <div class="campo completo"><div class="tform-acciones"><button type="submit" class="btn btn-slate btn-mini">Crear grupo</button></div></div>
               </form>
             </div>
@@ -1079,6 +1267,52 @@
             </div>
           </div>
 
+          <!-- NUEVO PANEL: GESTOR PAGO DOCENTE -->
+          <div class="panel" id="adm-panel-pago_docente">
+            <h4 style="color:var(--slate);margin-bottom:14px;font-size:1rem;font-weight:800;">💰 Gestor de Pago Docente</h4>
+            <div class="tform admin-form">
+              <div class="campo">
+                <label>Selecciona el docente</label>
+                <select id="admPagoSelectTeacher"><option value="">Selecciona...</option></select>
+              </div>
+            </div>
+            <div id="admPagoEditor" style="display:none;">
+              <div class="resumen-grid">
+                <div class="resumen-card azul"><div class="et">Pago/hora base</div><div class="val" id="admPagoBase">—</div></div>
+                <div class="resumen-card"><div class="et">Horas ped.</div><div class="val" id="admPagoSubH">—</div></div>
+                <div class="resumen-card"><div class="et">Horas extra</div><div class="val" id="admPagoSubHE">—</div></div>
+                <div class="resumen-card amarillo"><div class="et">Bonificaciones</div><div class="val" id="admPagoSubB">—</div></div>
+                <div class="resumen-card morado"><div class="et">Descuentos</div><div class="val" id="admPagoSubD">—</div></div>
+                <div class="resumen-card verde"><div class="et">Total neto</div><div class="val" id="admPagoSubTotal">—</div></div>
+              </div>
+              <div class="tform">
+                <h4>⏱️ Horas trabajadas</h4>
+                <div class="tform-grid">
+                  <div class="campo"><label>Horas pedagógicas</label><input type="number" id="admPagoHorasPed" min="0" step="0.5" value="0"></div>
+                  <div class="campo"><label>Horas extras</label><input type="number" id="admPagoHorasExt" min="0" step="0.5" value="0"></div>
+                  <div class="campo"><label>Pago por hora extra (S/)</label><input type="number" id="admPagoHoraExtra" min="0" step="0.01" value="0"></div>
+                </div>
+              </div>
+              <div class="tform">
+                <h4>➕ Bonificaciones</h4>
+                <div id="admPagoBonifList"></div>
+                <button type="button" class="btn btn-mini btn-verde" id="admPagoAddBonif">+ Agregar bonificación</button>
+              </div>
+              <div class="tform">
+                <h4>➖ Descuentos</h4>
+                <div id="admPagoDescList"></div>
+                <button type="button" class="btn btn-mini btn-rojo" id="admPagoAddDesc">+ Agregar descuento</button>
+              </div>
+              <div class="tform-acciones">
+                <button class="btn btn-azul" id="admPagoPreliminar">👁️ Preliminar</button>
+                <button class="btn btn-verde" id="admPagoDescargar">⬇️ Descargar</button>
+                <button class="btn btn-slate" id="admPagoImprimir">🖨️ Imprimir</button>
+                <button class="btn btn-morado" id="admPagoGuardar">💾 Guardar cambios</button>
+              </div>
+              <div class="boleta-preview-container" id="admPagoPreview"></div>
+            </div>
+          </div>
+
           <div class="panel" id="adm-panel-membrete">
             <h4 style="color:var(--slate);margin-bottom:14px;font-size:1rem;font-weight:800;">🖼️ Membrete Institucional (para Report Cards)</h4>
             <p style="color:var(--gris);font-size:.85rem;margin-bottom:16px;">Sube la imagen del membrete para Report Cards. Este es independiente de los membretes por subportal.</p>
@@ -1088,6 +1322,16 @@
               <div class="mensaje-exito" id="letterheadMsg">✅ Membrete guardado.</div>
             </div>
             <div class="letterhead-preview-box" id="letterheadPreviewBox"><p style="color:var(--gris);font-size:0.9rem;">No hay membrete cargado.</p></div>
+
+            <!-- NUEVO: FAVICON -->
+            <div class="tform admin-form" style="margin-top:20px;">
+              <h4>🎨 Favicon de la página</h4>
+              <p style="color:var(--gris);font-size:.85rem;margin-bottom:12px;">Sube una imagen cuadrada (32×32 o 64×64). Se usará como icono de la pestaña.</p>
+              <div class="campo"><label>Seleccionar imagen (JPG/PNG)</label><input type="file" id="adminFaviconFile" accept="image/*"></div>
+              <div class="tform-acciones"><button class="btn btn-slate btn-mini" id="btnSaveFavicon">Guardar Favicon</button></div>
+              <div class="mensaje-exito" id="faviconMsg">✅ Favicon guardado.</div>
+            </div>
+            <div class="firma-preview-box" id="faviconPreviewBox" style="min-height:80px;"><p style="color:var(--gris);font-size:0.9rem;">No hay favicon cargado.</p></div>
           </div>
 
           <div class="panel" id="adm-panel-fundador">
@@ -1424,12 +1668,10 @@
     <h3 style="margin-bottom:20px; text-align:center;">✏️ Editar Grupo</h3>
     <form id="formEditarGrupo" style="display:flex; flex-direction:column; gap:12px;">
       <input type="hidden" id="editGroupId">
-      <div class="campo"><label>Nombre del grupo <span class="req">*</span></label><input type="text" id="editGroupNombre" required></div>
       <div class="campo"><label>Programa <span class="req">*</span></label><input type="text" id="editGroupPrograma" required></div>
-      <div class="campo"><label>Nivel <span class="req">*</span></label><select id="editGroupNivel" required><option value="basico">Básico</option><option value="intermedio">Intermedio</option><option value="teens">Teens</option></select></div>
+      <div class="campo"><label>Nivel (texto libre) <span class="req">*</span></label><input type="text" id="editGroupNivel" required></div>
       <div class="campo"><label>Frecuencia <span class="req">*</span></label><input type="text" id="editGroupFrecuencia" required></div>
       <div class="campo"><label>Horario <span class="req">*</span></label><input type="text" id="editGroupHorario" required></div>
-      <div class="campo"><label>Total de horas por ciclo <span class="req">*</span></label><input type="number" id="editGroupTotalHoras" min="1" required></div>
       <div class="campo"><label>Docente <span class="req">*</span></label><select id="editGroupTeacher" required></select></div>
       <div class="tform-acciones" style="justify-content:flex-end; margin-top:10px;">
         <button type="button" class="btn btn-slate btn-mini" onclick="document.getElementById('modalEditarGrupo').classList.remove('visible')">Cancelar</button>
@@ -1439,6 +1681,19 @@
   </div>
 </div>
 
+<!-- WHATSAPP FLOAT -->
+<a href="https://wa.me/51915900797?text=Por%20favor%2C%20quisiera%20informaci%C3%B3n%20sobre%20los%20cursos%20de%20ingl%C3%A9s%20y%20fon%C3%A9tica." 
+   class="whatsapp-float" 
+   target="_blank" 
+   rel="noopener" 
+   aria-label="Escríbenos por WhatsApp">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32" fill="#fff">
+    <path d="M16 .4C7.4.4.4 7.4.4 16c0 2.8.7 5.5 2.1 7.9L.3 31.7l8-2.1A15.6 15.6 0 0 0 16 31.6C24.6 31.6 31.6 24.6 31.6 16S24.6.4 16 .4zm0 28.6c-2.5 0-4.9-.7-7-2l-.5-.3-4.7 1.2 1.3-4.6-.3-.5A12.9 12.9 0 0 1 3 16C3 8.8 8.8 3 16 3s13 5.8 13 13-5.8 13-13 13zm7.1-9.7c-.4-.2-2.3-1.1-2.7-1.3-.4-.1-.6-.2-.9.2-.3.4-1 1.3-1.3 1.6-.2.3-.5.3-.9.1-.4-.2-1.7-.6-3.2-2-1.2-1-2-2.3-2.2-2.7-.2-.4 0-.6.2-.8.2-.2.4-.5.6-.7.2-.2.3-.4.4-.7.1-.3 0-.5 0-.7-.1-.2-.9-2.1-1.2-2.9-.3-.8-.6-.7-.9-.7h-.7c-.2 0-.6.1-.9.4-.3.4-1.2 1.2-1.2 2.8 0 1.7 1.2 3.3 1.4 3.5.2.2 2.4 3.7 5.9 5.2.8.3 1.5.5 2 .7.8.3 1.6.2 2.2.1.7-.1 2.3-.9 2.6-1.8.3-.9.3-1.6.2-1.8-.1-.1-.3-.2-.7-.4z"/>
+  </svg>
+</a>
+
+</body>
+</html>
 <script>
 /* ============================================================
    SUPABASE CLIENT
@@ -1494,7 +1749,7 @@ const DEFAULT_STATE = {
     "PROF01": { password: "prof01", nombre: "Profesor Demo", email: "prof@escuela.com", area: "Inglés general", pagoHora: 25, year: 2024, month: 5, day: 10, dni: "99887766", dniPhoto: null, formalPhoto: null }
   },
   groups: [
-    { id: "grp_bas_1", nombre: "Basic A", nivel: "basico", teacherCode: "PROF01", studentCodes: ["JV2026"], programa: "Basic", frecuencia: "2 veces por semana", horario: "19:00-21:00", totalHoras: 40, cerrado: false }
+    { id: "grp_bas_1", nombre: "Basic A", nivel: "basico", nivelTexto: "Básico", teacherCode: "PROF01", studentCodes: ["JV2026"], programa: "Basic", frecuencia: "2 veces por semana", horario: "19:00-21:00", totalHoras: 40, cerrado: false, libros: [] }
   ],
   courses: [
     { id: "sch_basic", programa: "Basic", dia: "Jueves", horario: "19:00 a 21:00 pm.", modalidad: "Online", tipo: "matricula", max: 12 },
@@ -1509,9 +1764,12 @@ const DEFAULT_STATE = {
   signatures: {},
   reportCards: [],
   letterhead: "",
+  favicon: "",
   founderPhoto: "",
   marketingPhotos: [],
   iconos: {},
+  pagosDocentes: {},
+  solicitudes: [],
   oficinaImagenes: {
     marketing: { sello: "", membrete: "" },
     contabilidad: { sello: "", membrete: "" },
@@ -1530,6 +1788,7 @@ let memoriaFallback = null;
 let rcChartInstance = null;
 let currentRcData = null;
 let _alumnoVerificado = null;
+let _returnToTeacherCode = null;
 
 /* ============================================================
    PERSISTENCIA
@@ -1540,10 +1799,13 @@ function backfillState(parsed) {
   if (!parsed.signatures) parsed.signatures = {};
   if (!parsed.reportCards) parsed.reportCards = [];
   if (parsed.letterhead === undefined) parsed.letterhead = "";
+  if (parsed.favicon === undefined) parsed.favicon = "";
   if (parsed.founderPhoto === undefined) parsed.founderPhoto = "";
   if (!parsed.marketingPhotos) parsed.marketingPhotos = [];
   if (!parsed.courses) parsed.courses = JSON.parse(JSON.stringify(DEFAULT_STATE.courses));
   if (!parsed.iconos) parsed.iconos = {};
+  if (!parsed.pagosDocentes) parsed.pagosDocentes = {};
+  if (!parsed.solicitudes) parsed.solicitudes = [];
   if (!parsed.oficinaImagenes) parsed.oficinaImagenes = { marketing: { sello: "", membrete: "" }, contabilidad: { sello: "", membrete: "" }, direccion: { sello: "", membrete: "" } };
   else {
     if (!parsed.oficinaImagenes.marketing) parsed.oficinaImagenes.marketing = { sello: "", membrete: "" };
@@ -1553,10 +1815,12 @@ function backfillState(parsed) {
   Object.keys(parsed.teachers || {}).forEach(k => { if (parsed.teachers[k].pagoHora === undefined) parsed.teachers[k].pagoHora = 0; });
   (parsed.groups || []).forEach(g => {
     if (g.programa === undefined) g.programa = g.nombre || "";
+    if (g.nivelTexto === undefined) g.nivelTexto = g.nivel || "";
     if (g.frecuencia === undefined) g.frecuencia = "";
     if (g.horario === undefined) g.horario = "";
     if (g.totalHoras === undefined) g.totalHoras = 0;
     if (g.cerrado === undefined) g.cerrado = false;
+    if (!g.libros) g.libros = [];
   });
   (parsed.registrations || []).forEach(r => { if (r.voucher === undefined) r.voucher = null; });
   return parsed;
@@ -1582,6 +1846,7 @@ async function loadState() {
   await saveStateRaw(clon);
   return clon;
 }
+
 async function saveStateRaw(s) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch (e) { memoriaFallback = s; }
   try {
@@ -1594,6 +1859,7 @@ async function saveStateRaw(s) {
     console.log("☁️ Estado guardado en Supabase (" + sizeMB.toFixed(2) + " MB)");
   } catch (e) { console.error("❌ Error guardando en Supabase:", e); }
 }
+
 let _saveDebounce = null;
 function saveState() {
   refreshAll();
@@ -1627,46 +1893,50 @@ function genUsernameByDate(year, month, day, existing) {
 }
 function genPassword() { const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789"; let pwd = ""; for (let i = 0; i < 8; i++) pwd += chars.charAt(Math.floor(Math.random() * chars.length)); return pwd; }
 function fileToBase64(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result); reader.onerror = reject; reader.readAsDataURL(file); }); }
+function fechaFinDeMes() { const d = new Date(); const ultimoDia = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); return `${String(ultimoDia).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
 
- /* ============================================================
-   PROCESAR IMAGEN: Storage con fallback a Base64
+/* ============================================================
+   PROCESAR ARCHIVOS E IMÁGENES
    ============================================================ */
 async function procesarImagen(file, carpeta = "general") {
-  // Validaciones
   if (!file) throw new Error("No hay archivo.");
-  if (file.size > MAX_IMG_SIZE) {
-    throw new Error(`Archivo demasiado grande (${(file.size/1024/1024).toFixed(1)} MB). Máximo ${MAX_IMG_SIZE/1024/1024} MB.`);
-  }
-  if (!file.type || !file.type.startsWith("image/")) {
-    throw new Error(`El archivo no es una imagen (${file.type || "desconocido"}).`);
-  }
-
-  // Intentar subir a Storage
+  if (file.size > MAX_IMG_SIZE) throw new Error(`Archivo demasiado grande (máx ${MAX_IMG_SIZE/1024/1024} MB).`);
+  if (!file.type || !file.type.startsWith("image/")) throw new Error(`El archivo no es una imagen.`);
   try {
-    const timestamp = Date.now();
-    const random = Math.random().toString(36).substring(2, 8);
+    const timestamp = Date.now(); const random = Math.random().toString(36).substring(2, 8);
     const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
     const nombreLimpio = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").substring(0, 40);
     const path = `${carpeta}/${timestamp}_${random}_${nombreLimpio}`;
-
-    const { error: uploadError } = await supabase.storage
-      .from('evidencias')
-      .upload(path, file, { cacheControl: '3600', upsert: false });
-
+    const { error: uploadError } = await supabase.storage.from('evidencias').upload(path, file, { cacheControl: '3600', upsert: false });
     if (uploadError) throw uploadError;
-
     const { data: urlData } = supabase.storage.from('evidencias').getPublicUrl(path);
-    console.log(`✅ Subida a Storage: ${path}`);
     return urlData.publicUrl;
   } catch (e) {
     console.warn("⚠️ Storage falló, usando base64 como fallback:", e);
     return await fileToBase64(file);
   }
 }
-function fechaFinDeMes() { const d = new Date(); const ultimoDia = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); return `${String(ultimoDia).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; }
+
+async function procesarArchivo(file, carpeta = "general") {
+  const MAX = 5 * 1024 * 1024;
+  if (file.size > MAX) throw new Error(`Archivo muy grande (máx 5 MB).`);
+  try {
+    const ts = Date.now(); const rnd = Math.random().toString(36).substring(2, 8);
+    const ext = (file.name.split('.').pop() || 'bin').toLowerCase();
+    const limpio = file.name.replace(/[^a-zA-Z0-9._-]/g, "_").substring(0, 40);
+    const path = `${carpeta}/${ts}_${rnd}_${limpio}`;
+    const { error } = await supabase.storage.from('evidencias').upload(path, file, { cacheControl: '3600', upsert: false });
+    if (error) throw error;
+    const { data } = supabase.storage.from('evidencias').getPublicUrl(path);
+    return data.publicUrl;
+  } catch (e) {
+    console.warn("Storage falló, usando base64:", e);
+    return await fileToBase64(file);
+  }
+}
 
 /* ============================================================
-   ICONOS
+   ICONOS Y FAVICON
    ============================================================ */
 function renderIconografia() {
   const cont = document.getElementById("iconografiaLista"); if (!cont) return;
@@ -1703,9 +1973,26 @@ function aplicarIconosInterfaz() {
     if (ff) { ff.innerHTML = state.iconos.fundador ? `<img src="${state.iconos.fundador}">` : "👨‍🏫"; ff.style.padding = state.iconos.fundador ? '0' : ''; ff.style.overflow = 'hidden'; }
   }
 }
+function renderFavicon() {
+  const link = document.getElementById('dynamicFavicon');
+  if (link && state.favicon) link.href = state.favicon;
+  const box = document.getElementById('faviconPreviewBox');
+  if (box) box.innerHTML = state.favicon ? `<img src="${state.favicon}" style="max-width:64px;max-height:64px;border-radius:8px;">` : `<p style="color:var(--gris);font-size:0.9rem;">No hay favicon cargado.</p>`;
+}
+document.getElementById('btnSaveFavicon')?.addEventListener('click', async () => {
+  const inp = document.getElementById('adminFaviconFile');
+  if (!inp.files?.[0]) return;
+  try {
+    const url = await procesarImagen(inp.files[0], 'favicon');
+    state.favicon = url; saveState(); renderFavicon();
+    document.getElementById('faviconMsg').classList.add('visible');
+    setTimeout(() => document.getElementById('faviconMsg').classList.remove('visible'), 3000);
+    inp.value = '';
+  } catch (e) { alert('Error: ' + e.message); }
+});
 
 /* ============================================================
-   RENDER: HORARIOS
+   RENDER: HORARIOS E INSCRIPCIÓN
    ============================================================ */
 function renderHorariosTable() {
   const tbody = document.getElementById('tablaHorarios'); if (!tbody) return;
@@ -1728,9 +2015,6 @@ function renderHorariosTable() {
   tbody.querySelectorAll('.btn-cita').forEach(btn => btn.addEventListener('click', () => { document.getElementById('modalCita').classList.add('visible'); }));
 }
 
-/* ============================================================
-   INSCRIPCIÓN
-   ============================================================ */
 function abrirModalInscripcion(course) {
   document.getElementById("inscCourseId").value = course.id;
   document.getElementById("inscPaso1").style.display = "block";
@@ -1741,12 +2025,9 @@ function abrirModalInscripcion(course) {
   document.getElementById("inscDatosAlumno").style.display = "none";
   document.getElementById("btnTerminarInscExistente").disabled = true;
   document.getElementById("inscVoucherExistente").value = "";
-  document.getElementById("inscNombres").value = "";
-  document.getElementById("inscApellidos").value = "";
-  document.getElementById("inscDni").value = "";
-  document.getElementById("inscDniFile").value = "";
-  document.getElementById("inscEmail").value = "";
-  document.getElementById("inscTelefono").value = "";
+  document.getElementById("inscNombres").value = ""; document.getElementById("inscApellidos").value = "";
+  document.getElementById("inscDni").value = ""; document.getElementById("inscDniFile").value = "";
+  document.getElementById("inscEmail").value = ""; document.getElementById("inscTelefono").value = "";
   document.getElementById("inscVoucherNuevo").value = "";
   _alumnoVerificado = null;
   document.getElementById("modalInscripcion").classList.add("visible");
@@ -1773,111 +2054,31 @@ document.getElementById("btnTerminarInscExistente").addEventListener("click", as
   const courseId = document.getElementById("inscCourseId").value;
   const course = state.courses.find(c => c.id === courseId);
   const student = state.students[_alumnoVerificado];
- try {
-  const voucher = await procesarImagen(voucherFile, "vouchers");
-  state.registrations.push({ id: "reg_" + Date.now(), scheduleId: courseId, programa: course ? course.programa : "—", nombre: student.nombre, email: student.email, telefono: "—", fecha: new Date().toISOString().slice(0, 10), tipo: "matricula", origen: "web_existente", codigoAlumno: _alumnoVerificado, voucher });
+  try {
+    const voucher = await procesarImagen(voucherFile, "vouchers");
+    state.registrations.push({ id: "reg_" + Date.now(), scheduleId: courseId, programa: course ? course.programa : "—", nombre: student.nombre, email: student.email, telefono: "—", fecha: new Date().toISOString().slice(0, 10), tipo: "matricula", origen: "web_existente", codigoAlumno: _alumnoVerificado, voucher });
     saveState();
     document.getElementById("inscPasoExistente").style.display = "none";
     document.getElementById("inscExito").style.display = "block";
   } catch (e) { alert("Error al procesar voucher."); }
 });
 document.getElementById("btnTerminarPreInsc").addEventListener("click", async () => {
-  const nombres = document.getElementById("inscNombres").value.trim();
-  const apellidos = document.getElementById("inscApellidos").value.trim();
-  const dni = document.getElementById("inscDni").value.trim();
-  const email = document.getElementById("inscEmail").value.trim();
+  const nombres = document.getElementById("inscNombres").value.trim(); const apellidos = document.getElementById("inscApellidos").value.trim();
+  const dni = document.getElementById("inscDni").value.trim(); const email = document.getElementById("inscEmail").value.trim();
   const telefono = document.getElementById("inscTelefono").value.trim();
-  const dniFile = document.getElementById("inscDniFile").files[0];
-  const voucherFile = document.getElementById("inscVoucherNuevo").files[0];
+  const dniFile = document.getElementById("inscDniFile").files[0]; const voucherFile = document.getElementById("inscVoucherNuevo").files[0];
   if (!nombres || !apellidos || !dni || !telefono) { alert("Completa nombres, apellidos, DNI y teléfono."); return; }
   if (!dniFile) { alert("Sube foto DNI."); return; }
   if (!voucherFile) { alert("Sube voucher."); return; }
   const courseId = document.getElementById("inscCourseId").value;
   const course = state.courses.find(c => c.id === courseId);
   try {
-  const dniPhoto = await procesarImagen(dniFile, "dni-alumnos");
-  const voucher = await procesarImagen(voucherFile, "vouchers");
-  state.registrations.push({ id: "reg_" + Date.now(), scheduleId: courseId, programa: course ? course.programa : "—", nombre: nombres + " " + apellidos, email: email || "—", telefono, fecha: new Date().toISOString().slice(0, 10), tipo: "preinscripcion", origen: "web_nuevo", dni, dniPhoto, voucher });
+    const dniPhoto = await procesarImagen(dniFile, "dni-alumnos"); const voucher = await procesarImagen(voucherFile, "vouchers");
+    state.registrations.push({ id: "reg_" + Date.now(), scheduleId: courseId, programa: course ? course.programa : "—", nombre: nombres + " " + apellidos, email: email || "—", telefono, fecha: new Date().toISOString().slice(0, 10), tipo: "preinscripcion", origen: "web_nuevo", dni, dniPhoto, voucher });
     saveState();
     document.getElementById("inscPasoNuevo").style.display = "none";
     document.getElementById("inscExito").style.display = "block";
   } catch (e) { alert("Error al procesar archivos."); }
-});
-
-/* ============================================================
-   MODALES, LOGINS, MATRICULA/CITA
-   ============================================================ */
-document.getElementById('btnCerrarMatricula').addEventListener('click', () => { document.getElementById('modalMatricula').classList.remove('visible'); document.getElementById('matMsg').classList.remove('visible'); document.getElementById('formMatricula').reset(); });
-document.getElementById('formMatricula').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const nombre = document.getElementById('matNombre').value.trim(); const email = document.getElementById('matEmail').value.trim(); const telefono = document.getElementById('matTelefono').value.trim();
-  if (!nombre || !email || !telefono) { alert("Completa todos los campos."); return; }
-  state.registrations.push({ id: "reg_" + Date.now(), scheduleId: document.getElementById('matSchId').value, programa: document.getElementById('matPrograma').value, nombre, email, telefono, fecha: new Date().toISOString().slice(0, 10), tipo: "matricula" });
-  saveState();
-  document.getElementById('matMsg').classList.add('visible');
-  setTimeout(() => { document.getElementById('modalMatricula').classList.remove('visible'); document.getElementById('matMsg').classList.remove('visible'); document.getElementById('formMatricula').reset(); }, 2500);
-});
-document.getElementById('btnCerrarCita').addEventListener('click', () => { document.getElementById('modalCita').classList.remove('visible'); document.getElementById('citaMsg').classList.remove('visible'); document.getElementById('formCita').reset(); });
-document.getElementById('formCita').addEventListener('submit', (e) => {
-  e.preventDefault();
-  const nombre = document.getElementById('citaNombre').value.trim(); const email = document.getElementById('citaEmail').value.trim(); const telefono = document.getElementById('citaTelefono').value.trim(); const fecha = document.getElementById('citaFecha').value;
-  if (!nombre || !email || !telefono || !fecha) { alert("Completa todos los campos."); return; }
-  state.registrations.push({ id: "cita_" + Date.now(), scheduleId: "sch_terapia", programa: "Terapia del Lenguaje/voz/habla", nombre, email, telefono, fecha, tipo: "cita" });
-  saveState();
-  document.getElementById('citaMsg').classList.add('visible');
-  setTimeout(() => { document.getElementById('modalCita').classList.remove('visible'); document.getElementById('citaMsg').classList.remove('visible'); document.getElementById('formCita').reset(); }, 3000);
-});
-document.querySelectorAll("[data-open-modal]").forEach(btn => btn.addEventListener("click", () => {
-  const tipo = btn.dataset.openModal;
-  const modalId = tipo === "alumno" ? "modalAlumno" : tipo === "docente" ? "modalDocente" : "modalTalento";
-  const modal = document.getElementById(modalId); if (!modal) return;
-  modal.classList.add("visible");
-  setTimeout(() => { const input = document.getElementById(tipo === "alumno" ? "userAlumno" : tipo === "docente" ? "userDocente" : "codigoTalento"); if (input) input.focus(); }, 100);
-}));
-document.querySelectorAll("[data-close-modal]").forEach(btn => btn.addEventListener("click", () => {
-  const tipo = btn.dataset.closeModal;
-  const modalId = tipo === "alumno" ? "modalAlumno" : tipo === "docente" ? "modalDocente" : "modalTalento";
-  const modal = document.getElementById(modalId); if (!modal) return;
-  modal.classList.remove("visible");
-  modal.querySelectorAll("input").forEach(i => i.value = "");
-  modal.querySelectorAll(".modal-error").forEach(e => e.classList.remove("visible"));
-}));
-document.querySelectorAll(".modal-overlay").forEach(overlay => overlay.addEventListener("click", (e) => {
-  if (e.target === overlay) { overlay.classList.remove("visible"); overlay.querySelectorAll("input").forEach(i => i.value = ""); overlay.querySelectorAll(".modal-error").forEach(e => e.classList.remove("visible")); }
-}));
-
-document.getElementById("loginFormAlumno").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const user = document.getElementById("userAlumno").value.trim().toUpperCase();
-  const pass = document.getElementById("passAlumno").value;
-  const error = document.getElementById("errorAlumno"); error.classList.remove("visible");
-  if (user === "JESUS") { const codes = Object.keys(state.students); if (codes.length) { document.getElementById("modalAlumno").classList.remove("visible"); document.getElementById("userAlumno").value = ""; document.getElementById("passAlumno").value = ""; loginStudent(codes[0]); return; } }
-  const student = state.students[user];
-  if (!student || student.password !== pass) { error.classList.add("visible"); return; }
-  document.getElementById("modalAlumno").classList.remove("visible"); document.getElementById("userAlumno").value = ""; document.getElementById("passAlumno").value = ""; loginStudent(user);
-});
-document.getElementById("loginFormDocente").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const user = document.getElementById("userDocente").value.trim().toUpperCase();
-  const pass = document.getElementById("passDocente").value;
-  const error = document.getElementById("errorDocente"); error.classList.remove("visible");
-  if (user === "JESUS") { const codes = Object.keys(state.teachers); if (codes.length) { document.getElementById("modalDocente").classList.remove("visible"); document.getElementById("userDocente").value = ""; document.getElementById("passDocente").value = ""; loginTeacher(codes[0]); return; } }
-  const teacher = state.teachers[user];
-  if (!teacher || teacher.password !== pass) { error.classList.add("visible"); return; }
-  document.getElementById("modalDocente").classList.remove("visible"); document.getElementById("userDocente").value = ""; document.getElementById("passDocente").value = ""; loginTeacher(user);
-});
-document.getElementById("loginFormTalento").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const code = document.getElementById("codigoTalento").value;
-  const error = document.getElementById("errorTalento"); error.classList.remove("visible");
-  if (code.toUpperCase() === "JESUS" || code === TALENTO_CODE || code === ADMIN_CODE) {
-    document.getElementById("modalTalento").classList.remove("visible");
-    document.getElementById("codigoTalento").value = "";
-    loginTalento();
-    return;
-  }
-  error.classList.add("visible");
-  document.getElementById("codigoTalento").value = "";
 });
 
 /* ============================================================
@@ -1895,13 +2096,16 @@ function loginStudent(code) {
   document.getElementById("dashAvatarA").textContent = currentStudent.nombre.split(" ").map(p => p[0]).join("").slice(0, 2).toUpperCase();
   renderStudentGroups(); refreshStudentView();
   document.getElementById("relojA").textContent = horaActual();
+  history.pushState({ portal: 'alumno' }, '', '#alumno');
 }
+
 function renderStudentGroups() {
   const cont = document.getElementById("dashGruposA"); cont.innerHTML = "";
   const groups = getStudentGroups(currentStudentCode);
   if (!groups.length) { cont.innerHTML = `<span class="dash-group-badge">📚 Sin grupo asignado</span>`; return; }
   groups.forEach(g => { const nivel = getNivelInfo(g.nivel); const badge = document.createElement("span"); badge.className = "dash-group-badge"; badge.innerHTML = `📚 ${g.nombre} · ${nivel.nombre}`; cont.appendChild(badge); });
 }
+
 function loginTeacher(code) {
   currentTeacherCode = code; currentTeacher = state.teachers[code];
   currentStudentCode = null; currentStudent = null; adminLoggedIn = false;
@@ -1920,7 +2124,9 @@ function loginTeacher(code) {
   getTeacherGroups(currentTeacherCode).forEach(g => { const opt = document.createElement("option"); opt.value = g.id; opt.textContent = g.nombre; selRcGroup.appendChild(opt); });
   renderTeacherSignature(); renderTeacherPhoto(); refreshTeacherView();
   document.getElementById("relojD").textContent = horaActual();
+  history.pushState({ portal: 'docente' }, '', '#docente');
 }
+
 function loginTalento() {
   adminLoggedIn = true; currentStudentCode = null; currentStudent = null; currentTeacherCode = null; currentTeacher = null;
   document.getElementById("portalCards").style.display = "none";
@@ -1931,20 +2137,71 @@ function loginTalento() {
   if (selAdmAsis) { selAdmAsis.innerHTML = '<option value="">Selecciona un grupo...</option>'; state.groups.forEach(g => { const opt = document.createElement("option"); opt.value = g.id; opt.textContent = g.nombre; selAdmAsis.appendChild(opt); }); }
   renderAdminLetterhead(); renderAdminFounder(); renderAdminCourses(); refreshAdminView(); renderIconografia(); aplicarIconosInterfaz();
   document.getElementById("relojTal").textContent = horaActual();
+  history.pushState({ portal: 'talento' }, '', '#talento');
 }
-document.getElementById("btnSalirA").addEventListener("click", () => { currentStudentCode = null; currentStudent = null; document.getElementById("dashboardAlumno").classList.remove("visible"); document.getElementById("portalCards").style.display = "grid"; });
-document.getElementById("btnSalirD").addEventListener("click", () => { currentTeacherCode = null; currentTeacher = null; document.getElementById("dashboardDocente").classList.remove("visible"); document.getElementById("portalCards").style.display = "grid"; });
-document.getElementById("btnSalirTal").addEventListener("click", () => { adminLoggedIn = false; document.getElementById("dashboardTalento").classList.remove("visible"); document.getElementById("portalCards").style.display = "grid"; });
 
 /* ============================================================
-   TABS
+   LÓGICA DE CIERRE DE SESIÓN Y NAVEGACIÓN
+   ============================================================ */
+function navigateToPortal(portal) {
+  if (portal === 'main') {
+    document.getElementById('portalCards').style.display = 'grid';
+    ['dashboardAlumno','dashboardDocente','dashboardTalento'].forEach(id => document.getElementById(id).classList.remove('visible'));
+    currentStudentCode = null; currentStudent = null; currentTeacherCode = null; currentTeacher = null; adminLoggedIn = false;
+    return;
+  }
+  ['dashboardAlumno','dashboardDocente','dashboardTalento'].forEach(id => document.getElementById(id).classList.remove('visible'));
+  document.getElementById('portalCards').style.display = 'none';
+  if (portal === 'alumno' && currentStudent) document.getElementById('dashboardAlumno').classList.add('visible');
+  if (portal === 'docente' && currentTeacher) document.getElementById('dashboardDocente').classList.add('visible');
+  if (portal === 'talento' && adminLoggedIn) document.getElementById('dashboardTalento').classList.add('visible');
+}
+
+window.addEventListener('popstate', (e) => {
+  const s = e.state;
+  if (!s || !s.portal) { navigateToPortal('main'); return; }
+  navigateToPortal(s.portal);
+});
+
+document.getElementById("btnSalirA").addEventListener("click", () => {
+  if (_returnToTeacherCode) {
+    const tc = _returnToTeacherCode;
+    _returnToTeacherCode = null;
+    currentStudentCode = null; currentStudent = null;
+    document.getElementById("dashboardAlumno").classList.remove("visible");
+    loginTeacher(tc);
+    return;
+  }
+  currentStudentCode = null; currentStudent = null;
+  document.getElementById("dashboardAlumno").classList.remove("visible");
+  document.getElementById("portalCards").style.display = "grid";
+  history.pushState(null, '', location.pathname);
+});
+document.getElementById("btnSalirD").addEventListener("click", () => {
+  currentTeacherCode = null; currentTeacher = null;
+  document.getElementById("dashboardDocente").classList.remove("visible");
+  document.getElementById("portalCards").style.display = "grid";
+  history.pushState(null, '', location.pathname);
+});
+document.getElementById("btnSalirTal").addEventListener("click", () => {
+  adminLoggedIn = false;
+  document.getElementById("dashboardTalento").classList.remove("visible");
+  document.getElementById("portalCards").style.display = "grid";
+  history.pushState(null, '', location.pathname);
+});
+
+/* ============================================================
+   ENRUTADORES DE PESTAÑAS (TABS)
    ============================================================ */
 document.querySelectorAll("#dashboardAlumno .dash-tab").forEach(tab => tab.addEventListener("click", () => {
+  if (tab.disabled) return;
   document.querySelectorAll("#dashboardAlumno .dash-tab").forEach(t => t.classList.remove("activo"));
   document.querySelectorAll("#dashboardAlumno .panel").forEach(p => p.classList.remove("activo"));
   tab.classList.add("activo");
   document.getElementById("panel-" + tab.dataset.atab).classList.add("activo");
+  if (tab.dataset.atab === "libros") renderStudentLibros();
 }));
+
 document.querySelectorAll("#dashboardDocente .dash-tab").forEach(tab => tab.addEventListener("click", () => {
   document.querySelectorAll("#dashboardDocente .dash-tab").forEach(t => t.classList.remove("activo"));
   document.querySelectorAll("#dashboardDocente .panel").forEach(p => p.classList.remove("activo"));
@@ -1952,13 +2209,18 @@ document.querySelectorAll("#dashboardDocente .dash-tab").forEach(tab => tab.addE
   document.getElementById("dpanel-" + tab.dataset.dtab).classList.add("activo");
   if (tab.dataset.dtab === "historial") renderTeacherHistorialRC();
   if (tab.dataset.dtab === "pago") renderTeacherPago();
+  if (tab.dataset.dtab === "solicitudes") renderSolicitudesDocente();
+  if (tab.dataset.dtab === "acceso_alumno") renderAccesoAlumnoSelect();
+  if (tab.dataset.dtab === "libros_grupos") renderTeacherLibrosGrupos();
 }));
+
 document.querySelectorAll("[data-taltab]").forEach(tab => tab.addEventListener("click", () => {
   document.querySelectorAll("[data-taltab]").forEach(t => t.classList.remove("activo"));
   document.querySelectorAll("#dashboardTalento > .dash-contenido > .panel").forEach(p => p.classList.remove("activo"));
   tab.classList.add("activo");
   document.getElementById("tal-panel-" + tab.dataset.taltab).classList.add("activo");
 }));
+
 document.querySelectorAll("#tal-panel-admin [data-admtab]").forEach(tab => tab.addEventListener("click", () => {
   document.querySelectorAll("#tal-panel-admin [data-admtab]").forEach(t => t.classList.remove("activo"));
   document.querySelectorAll("#tal-panel-admin > .panel").forEach(p => p.classList.remove("activo"));
@@ -1968,6 +2230,7 @@ document.querySelectorAll("#tal-panel-admin [data-admtab]").forEach(tab => tab.a
   if (tab.dataset.admtab === "examenes") refreshAdminExamGroups();
   if (tab.dataset.admtab === "programacion") renderAdminCourses();
 }));
+
 document.querySelectorAll("[data-cont-subtab]").forEach(tab => tab.addEventListener("click", () => {
   document.querySelectorAll("[data-cont-subtab]").forEach(t => t.classList.remove("activo"));
   document.querySelectorAll("#tal-panel-contabilidad .subpanel").forEach(p => p.classList.remove("activo"));
@@ -1989,14 +2252,10 @@ document.querySelectorAll("[data-mkt-subtab]").forEach(tab => tab.addEventListen
 }));
 
 /* ============================================================
-   VISOR
-   ============================================================ */
-function showImageViewer(src) { document.getElementById('imageViewerImg').src = src; document.getElementById('modalImageViewer').classList.add('visible'); }
-
-/* ============================================================
    VISTA ALUMNO
    ============================================================ */
-function refreshStudentView() { if (!currentStudent) return; renderStudentResumen(); renderStudentCalificaciones(); renderStudentExams(); renderStudentAsistencia(); renderStudentReportCards(); }
+function refreshStudentView() { if (!currentStudent) return; renderStudentResumen(); renderStudentCalificaciones(); renderStudentExams(); renderStudentAsistencia(); renderStudentReportCards(); renderStudentLibros(); }
+
 function renderStudentResumen() {
   const prom = promedioGeneral(currentStudentCode);
   document.getElementById("resumenPromA").textContent = prom !== null ? prom.toFixed(2) : "—";
@@ -2008,6 +2267,7 @@ function renderStudentResumen() {
   document.getElementById("resumenExamsA").textContent = `${completados}/${exs.length}`;
   document.getElementById("resumenActA").textContent = horaActual();
 }
+
 function renderStudentCalificaciones() {
   const prom = promedioGeneral(currentStudentCode);
   document.getElementById("califPromedioA").textContent = prom !== null ? prom.toFixed(2) : "—";
@@ -2031,6 +2291,7 @@ function renderStudentCalificaciones() {
   });
   if (!hay) detalle.innerHTML = `<p style="color:var(--gris);padding:16px;">Aún no hay evaluaciones.</p>`;
 }
+
 function renderStudentExams() {
   const cont = document.getElementById("studentExamsLista"); cont.innerHTML = ""; cont.style.display = "block";
   const myGroups = getStudentGroups(currentStudentCode).map(g => g.id);
@@ -2046,6 +2307,7 @@ function renderStudentExams() {
   cont.querySelectorAll("[data-start-exam]").forEach(btn => btn.addEventListener("click", () => iniciarExamen(btn.dataset.startExam)));
   cont.querySelectorAll("[data-retake-exam]").forEach(btn => btn.addEventListener("click", () => { if (confirm("¿Reintentar?")) iniciarExamen(btn.dataset.retakeExam); }));
 }
+
 function iniciarExamen(examId) {
   const exam = state.exams.find(e => e.id === examId); if (!exam) return;
   testActual = exam;
@@ -2064,7 +2326,9 @@ function iniciarExamen(examId) {
   });
   document.getElementById("studentExamRunner").scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
 document.getElementById("btnCancelarTestA").addEventListener("click", () => { document.getElementById("studentExamRunner").classList.remove("visible"); document.getElementById("studentExamsLista").style.display = "block"; document.getElementById("testResultadoA").classList.remove("visible"); testActual = null; });
+
 document.getElementById("runnerFormA").addEventListener("submit", (e) => {
   e.preventDefault(); if (!testActual || !currentStudent) return;
   let correctas = 0, sinResp = 0;
@@ -2090,12 +2354,14 @@ document.getElementById("runnerFormA").addEventListener("submit", (e) => {
   saveState();
 });
 document.getElementById("btnVolverTestsA").addEventListener("click", () => { document.getElementById("studentExamRunner").classList.remove("visible"); document.getElementById("studentExamsLista").style.display = "block"; document.getElementById("testResultadoA").classList.remove("visible"); testActual = null; renderStudentExams(); });
+
 function renderStudentAsistencia() {
   const body = document.getElementById("asistenciaBodyA"); body.innerHTML = "";
   const regs = asistenciaDe(currentStudentCode);
   if (!regs.length) { body.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#6b7280;">Sin registros.</td></tr>`; return; }
   [...regs].sort((a, b) => b.fecha.localeCompare(a.fecha)).forEach(a => { const tr = document.createElement("tr"); tr.innerHTML = `<td>${formatearFecha(a.fecha)}</td><td>${a.clase}</td><td><span class="estado ${claseEstadoAsistencia(a.estado)}">${a.estado}</span></td>`; body.appendChild(tr); });
 }
+
 function renderStudentReportCards() {
   const cont = document.getElementById("studentReportCardsList"); cont.innerHTML = "";
   const myRCs = state.reportCards.filter(rc => rc.studentCode === currentStudentCode);
@@ -2109,48 +2375,41 @@ function renderStudentReportCards() {
   cont.querySelectorAll("[data-download-rc]").forEach(btn => btn.addEventListener("click", () => { const rc = state.reportCards.find(r => r.id === btn.dataset.downloadRc); if (rc) descargarReportCard(rc); }));
   cont.querySelectorAll("[data-print-rc]").forEach(btn => btn.addEventListener("click", () => { const rc = state.reportCards.find(r => r.id === btn.dataset.printRc); if (rc) imprimirReportCard(rc); }));
 }
-document.getElementById("btnIniciarMatricula").addEventListener("click", () => {
-  document.getElementById("matriculaInicio").style.display = "none";
-  document.getElementById("matriculaContenido").style.display = "block";
-  renderStudentMatriculaCursos();
-});
-document.getElementById("btnCancelarMatriculaAlumno").addEventListener("click", () => {
-  document.getElementById("matriculaInicio").style.display = "block";
-  document.getElementById("matriculaContenido").style.display = "none";
-});
-function renderStudentMatriculaCursos() {
-  const cont = document.getElementById("studentMatriculaCursos"); cont.innerHTML = "";
-  const available = state.courses.filter(c => c.tipo !== "cita");
-  if (!available.length) { cont.innerHTML = `<div class="empty-state">📚 No hay cursos disponibles.</div>`; return; }
-  available.forEach(course => {
-    const card = document.createElement("div"); card.className = "group-card";
-    card.innerHTML = `<div class="group-card-head"><div class="group-info"><span class="group-nivel basico">${course.modalidad}</span><strong>${course.programa}</strong><small>📅 ${course.dia || '—'} · ⏰ ${course.horario || '—'}</small></div><div class="asg-actions"><button class="btn btn-mini btn-azul" data-matricular-curso="${course.id}">Matricularme ahora</button></div></div><div class="group-card-body" data-matricular-body="${course.id}" style="display:none;"><div class="campo"><label>Subir voucher de pago <span class="req">*</span></label><input type="file" accept="image/*" data-matriculo-voucher="${course.id}"></div><div class="tform-acciones"><button class="btn btn-verde btn-mini" data-confirmar-matricula="${course.id}">Confirmar matrícula</button></div></div>`;
-    cont.appendChild(card);
+
+function renderStudentLibros() {
+  const cont = document.getElementById('studentLibrosLista');
+  const tab = document.querySelector('[data-atab="libros"]');
+  if (!cont || !currentStudentCode) return;
+  const groups = getStudentGroups(currentStudentCode);
+  const matriculado = groups.length > 0;
+  if (tab) {
+    tab.disabled = !matriculado;
+    tab.style.opacity = matriculado ? '1' : '.45';
+    tab.style.cursor = matriculado ? 'pointer' : 'not-allowed';
+    tab.title = matriculado ? '' : 'Debes estar matriculado en un grupo para ver tus libros.';
+  }
+  if (!matriculado) {
+    cont.innerHTML = '<div class="empty-state">🔒 Aún no estás matriculado. Los libros aparecerán cuando te asignen a un grupo.</div>';
+    return;
+  }
+  let html = '';
+  groups.forEach(g => {
+    const libros = g.libros || [];
+    if (libros.length) {
+      html += `<h5 style="color:var(--azul);margin:16px 0 8px;">📚 ${g.nombre || g.programa}</h5>`;
+      libros.forEach(l => {
+        html += `<div class="libro-card"><div class="libro-info">📖 ${l.nombre}</div><div class="libro-actions"><a href="${l.url}" target="_blank" rel="noopener" class="btn btn-mini btn-azul">👁️ Vista previa</a><a href="${l.url}" download="${l.nombre}" class="btn btn-mini btn-verde">⬇️ Descargar</a></div></div>`;
+      });
+    }
   });
-  cont.querySelectorAll("[data-matricular-curso]").forEach(btn => btn.addEventListener("click", () => {
-    const body = cont.querySelector(`[data-matricular-body="${btn.dataset.matricularCurso}"]`);
-    if (body) body.style.display = body.style.display === "none" ? "block" : "none";
-  }));
-  cont.querySelectorAll("[data-confirmar-matricula]").forEach(btn => btn.addEventListener("click", async () => {
-    const courseId = btn.dataset.confirmarMatricula;
-    const fileInput = cont.querySelector(`[data-matriculo-voucher="${courseId}"]`);
-    if (!fileInput.files || !fileInput.files[0]) { alert("Sube tu voucher."); return; }
-   try {
-  const voucher = await procesarImagen(fileInput.files[0], "vouchers");
-  const course = state.courses.find(c => c.id === courseId);
-  state.registrations.push({ id: "reg_alum_" + Date.now(), scheduleId: courseId, programa: course ? course.programa : "—", nombre: currentStudent.nombre, email: currentStudent.email, telefono: "—", fecha: new Date().toISOString().slice(0, 10), tipo: "matricula", origen: "portal_alumno", codigoAlumno: currentStudentCode, voucher });
-      saveState();
-      alert("✅ ¡Matrícula enviada! La escuela se contactará contigo.");
-      document.getElementById("matriculaInicio").style.display = "block";
-      document.getElementById("matriculaContenido").style.display = "none";
-    } catch (e) { alert("Error al procesar voucher."); }
-  }));
+  cont.innerHTML = html || '<div class="empty-state">📚 Tus grupos aún no tienen libros cargados.</div>';
 }
 
 /* ============================================================
    REPORT CARD HELPERS
    ============================================================ */
 function getRcEstado(rc) { const avg = parseFloat(rc.average); if (isNaN(avg)) return { texto: "Pendiente", clase: "" }; if (avg >= 14) return { texto: "Aprobado", clase: "aprobado" }; return { texto: "Desaprobado", clase: "desaprobado" }; }
+
 function buildReportCardHTML(rc) {
   const student = state.students[rc.studentCode]; const teacher = state.teachers[rc.teacherCode];
   const groups = getStudentGroups(rc.studentCode).map(g => g.nombre).join(", ") || "Sin grupo";
@@ -2160,17 +2419,20 @@ function buildReportCardHTML(rc) {
   const est = getRcEstado(rc);
   return `${letterheadHtml}<div class="rc-header"><div><h2>Report Card</h2><p>Escuela de Inglés y Fonética Clínica Jotavalenzuela</p><p>Por el Prof. Juan Valenzuela M.</p></div><div style="text-align:right;"><p><strong>Fecha:</strong></p><p>${formatearFecha(rc.date)}</p></div></div><div class="rc-student-info"><p><strong>Alumno:</strong> ${student.nombre}</p><p><strong>Usuario:</strong> ${rc.studentCode}</p><p><strong>Grupo:</strong> ${groups}</p><p><strong>Programa:</strong> ${student.programa || "—"}</p><p><strong>Docente:</strong> ${teacher.nombre}</p></div><div class="rc-status-banner ${est.clase}"><span class="rc-status-label">Estado académico:</span><span class="rc-status-value">${est.texto}</span></div><div class="tabla-wrap" style="box-shadow:none; border:1px solid var(--borde); margin-bottom:20px;"><table style="min-width:100%;"><thead><tr><th>Criterio</th><th style="text-align:right;">Nota</th></tr></thead><tbody>${gradesHtml}</tbody><tfoot><tr style="background:#f1f5f9; font-weight:800;"><td style="text-align:right;">Promedio General:</td><td style="text-align:right;">${rc.average}</td></tr></tfoot></table></div><div class="rc-comment-box"><h4>Teacher's Comment</h4><p>${rc.comment}</p></div><div class="rc-footer"><div></div><div class="rc-signature">${rc.signature ? `<img src="${rc.signature}">` : ""}<p>${teacher.nombre}</p></div></div>`;
 }
+
 function mostrarReportCardModal(rc) {
   const modal = document.createElement("div"); modal.className = "modal-overlay visible";
   modal.innerHTML = `<div class="modal-box" style="max-width:800px; text-align:left; padding:20px;"><button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button><div class="rc-preview-container visible" style="box-shadow:none; border:none; padding:0; margin:0;">${buildReportCardHTML(rc)}</div><div style="text-align:right; margin-top:20px;"><button class="btn btn-slate" onclick="this.closest('.modal-overlay').remove()">Cerrar</button></div></div>`;
   document.body.appendChild(modal);
 }
+
 function imprimirReportCard(rc) {
   const iframe = document.createElement('iframe'); iframe.style.position = 'absolute'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
   document.body.appendChild(iframe); const doc = iframe.contentWindow.document; doc.open();
   doc.write(`<html><head><title>Report Card</title><style>body{font-family:'Segoe UI',sans-serif;padding:20px;color:#1f2937}.rc-letterhead{text-align:center;margin:0 0 20px 0;width:100%}.rc-letterhead img{width:100%;max-height:120px;object-fit:contain;display:block;margin:0 auto}.rc-header{display:flex;justify-content:space-between;margin-bottom:20px}.rc-header h2{color:#004A8F;font-size:1.5rem;margin:0 0 5px 0}.rc-header p{color:#6b7280;font-size:0.9rem;margin:0}.rc-student-info{margin-bottom:20px;background:#f8fafc;padding:15px;border-radius:8px;border-left:4px solid #FDB913;display:grid;grid-template-columns:1fr 1fr;gap:10px}.rc-student-info p{margin:0;font-size:0.95rem}.rc-status-banner{margin-bottom:20px;padding:16px 22px;border-radius:10px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:1.05rem;border-width:2px;border-style:solid}.rc-status-banner.aprobado{background:#dcfce7;color:#15803d;border-color:#86efac}.rc-status-banner.desaprobado{background:#fee2e2;color:#b91c1c;border-color:#fecaca}.tabla-wrap{width:100%;border-collapse:collapse;margin-bottom:20px}.tabla-wrap th,.tabla-wrap td{padding:10px;border:1px solid #e5e7eb;font-size:0.9rem}.tabla-wrap th{background:#004A8F;color:#fff;text-align:left}.tabla-wrap tfoot tr{background:#f1f5f9;font-weight:800}.rc-comment-box{background:#f0fdf4;padding:20px;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:30px}.rc-footer{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px;padding-top:20px;border-top:1px solid #e2e8f0}.rc-signature{text-align:center}.rc-signature img{max-height:80px;display:block;margin:0 auto 10px}.rc-signature p{font-size:0.85rem;color:#6b7280;border-top:1px solid #9ca3af;padding-top:5px;width:200px;margin:0 auto}@media print{body{padding:0}}</style></head><body>${buildReportCardHTML(rc)}</body></html>`); doc.close();
   setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); document.body.removeChild(iframe); }, 500);
 }
+
 function descargarReportCard(rc) {
   const student = state.students[rc.studentCode];
   const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>RC - ${student.nombre}</title><style>body{font-family:'Segoe UI',sans-serif;padding:20px;max-width:900px;margin:0 auto}.rc-letterhead{text-align:center;margin:0 0 20px 0}.rc-letterhead img{width:100%;max-height:120px;object-fit:contain}.rc-header{display:flex;justify-content:space-between;margin-bottom:20px}.rc-header h2{color:#004A8F}.rc-student-info{background:#f8fafc;padding:15px;border-left:4px solid #FDB913;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}.rc-status-banner{padding:16px 22px;border-radius:10px;display:flex;justify-content:space-between;font-weight:800;margin-bottom:20px;border:2px solid}.rc-status-banner.aprobado{background:#dcfce7;color:#15803d;border-color:#86efac}.rc-status-banner.desaprobado{background:#fee2e2;color:#b91c1c;border-color:#fecaca}.tabla-wrap{width:100%;border-collapse:collapse;margin-bottom:20px}.tabla-wrap th,.tabla-wrap td{padding:10px;border:1px solid #e5e7eb;font-size:.9rem}.tabla-wrap th{background:#004A8F;color:#fff}.tabla-wrap tfoot tr{background:#f1f5f9;font-weight:800}.rc-comment-box{background:#f0fdf4;padding:20px;border-radius:8px;border:1px solid #bbf7d0;margin-bottom:30px}.rc-footer{display:flex;justify-content:space-between;margin-top:40px;padding-top:20px;border-top:1px solid #e2e8f0}.rc-signature{text-align:center}.rc-signature img{max-height:80px}.rc-signature p{font-size:.85rem;color:#6b7280;border-top:1px solid #9ca3af;padding-top:5px;width:200px;margin:0 auto}</style></head><body>${buildReportCardHTML(rc)}</body></html>`;
@@ -2178,611 +2440,3 @@ function descargarReportCard(rc) {
   const a = document.createElement('a'); a.href = url; a.download = `ReportCard_${rc.studentCode}_${rc.date}.html`;
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
-
-/* ============================================================
-   VISTA DOCENTE
-   ============================================================ */
-function puedeCerrarCurso(group) {
-  if (!group || group.studentCodes.length === 0) return false;
-  return group.studentCodes.every(code => state.reportCards.some(rc => rc.studentCode === code && rc.teacherCode === group.teacherCode));
-}
-function cerrarCurso(groupId) {
-  const group = state.groups.find(g => g.id === groupId); if (!group) return;
-  if (!puedeCerrarCurso(group)) { alert("⚠️ Aún no puedes cerrar el curso. Debes enviar los Report Cards de TODOS los alumnos."); return; }
-  if (!confirm(`¿Cerrar el curso "${group.nombre}"? No podrás editar notas después.`)) return;
-  group.cerrado = true; group.fechaCierre = new Date().toISOString().slice(0, 10);
-  saveState(); alert("✅ Curso cerrado correctamente.");
-}
-function reabrirCurso(groupId) {
-  const group = state.groups.find(g => g.id === groupId); if (!group) return;
-  if (!confirm(`¿Reabrir el curso "${group.nombre}"?`)) return;
-  group.cerrado = false; delete group.fechaCierre;
-  saveState(); alert("✅ Curso reabierto.");
-}
-function refreshTeacherView() { renderTeacherGroups(); renderTeacherAlumnos(); renderTeacherAsignaciones(); renderTeacherAsistencia(); renderTeacherExamsReadOnly(); renderTeacherPhoto(); }
-function renderTeacherSignature() { const box = document.getElementById("signaturePreviewBox"); const sig = state.signatures[currentTeacherCode]; if (sig) box.innerHTML = `<img src="${sig}" alt="Firma">`; else box.innerHTML = `<p style="color:var(--gris);font-size:0.9rem;">No has subido una firma aún.</p>`; }
-document.getElementById("btnSaveSignature").addEventListener("click", async () => {
-  const fileInput = document.getElementById("teacherSignatureFile"); if (!fileInput.files || !fileInput.files[0]) { alert("Selecciona imagen."); return; }
-  if (fileInput.files[0].size > MAX_IMG_SIZE) { alert("Máximo 2MB."); return; }
-  try { const url = await procesarImagen(fileInput.files[0], "firmas"); state.signatures[currentTeacherCode] = url; saveState(); renderTeacherSignature(); const msg = document.getElementById("signatureMsg"); msg.classList.add("visible"); setTimeout(() => msg.classList.remove("visible"), 3000); fileInput.value = ""; } catch (e) { alert("Error: " + e.message); }
-});
-function renderTeacherPhoto() { const box = document.getElementById("teacherPhotoPreviewBox"); const photo = state.teachers[currentTeacherCode]?.formalPhoto; if (photo) box.innerHTML = `<img src="${photo}" alt="Foto">`; else box.innerHTML = `<p style="color:var(--gris);font-size:0.9rem;">No has subido una foto aún.</p>`; }
-document.getElementById("btnSavePhoto").addEventListener("click", async () => {
-  const fileInput = document.getElementById("teacherPhotoFile"); if (!fileInput.files || !fileInput.files[0]) { alert("Selecciona imagen."); return; }
-  if (fileInput.files[0].size > MAX_IMG_SIZE) { alert("Máximo 2MB."); return; }
-  try { const url = await procesarImagen(fileInput.files[0], "fotos-docentes"); state.teachers[currentTeacherCode].formalPhoto = url; saveState(); renderTeacherPhoto(); const avatar = document.getElementById("dashAvatarD"); avatar.innerHTML = `<img src="${url}">`; avatar.style.padding = '0'; const msg = document.getElementById("photoMsg"); msg.classList.add("visible"); setTimeout(() => msg.classList.remove("visible"), 3000); fileInput.value = ""; } catch (e) { alert("Error."); }
-});
-function renderTeacherGroups() {
-  const cont = document.getElementById("dMisGrupos"); cont.innerHTML = "";
-  const groups = getTeacherGroups(currentTeacherCode);
-  if (!groups.length) { cont.innerHTML = `<div class="empty-state">📚 Aún no tienes grupos.</div>`; return; }
-  groups.forEach(g => {
-    const nivel = getNivelInfo(g.nivel); const cerrado = g.cerrado === true; const puedeCerrar = puedeCerrarCurso(g);
-    const card = document.createElement("div"); card.className = "group-card" + (cerrado ? " cerrado" : "");
-    card.innerHTML = `<div class="group-card-head"><div class="group-info"><span class="group-nivel ${nivel.clase}">${nivel.nombre}</span>${cerrado ? '<span class="cerrado-badge">🔒 Cerrado</span>' : ''}<strong>${g.nombre}</strong><small>${g.programa || '—'} · ${g.frecuencia || '—'} · ${g.horario || '—'} · ${g.totalHoras || 0} h/ciclo · ${g.studentCodes.length} alumno(s)</small></div><div class="asg-actions">${cerrado ? `<button class="btn btn-mini btn-cerrar-curso" disabled>🔒 Cerrado</button>` : `<button class="btn btn-mini btn-cerrar-curso" data-cerrar-curso="${g.id}" ${puedeCerrar ? '' : 'disabled title="Debes enviar todos los RC antes de cerrar" style="opacity:.5;cursor:not-allowed;"'}>🔒 Cerrar Curso</button>`}</div></div><div class="group-card-body"><h5>Alumnos</h5><div class="student-chips">${g.studentCodes.length === 0 ? '<span style="color:var(--gris);font-size:.85rem;">Sin alumnos</span>' : g.studentCodes.map(code => { const s = state.students[code]; return s ? `<span class="student-chip">${s.nombre}</span>` : ""; }).join("")}</div></div>`;
-    cont.appendChild(card);
-  });
-  cont.querySelectorAll("[data-cerrar-curso]").forEach(btn => btn.addEventListener("click", () => cerrarCurso(btn.dataset.cerrarCurso)));
-}
-function renderTeacherAlumnos() {
-  const body = document.getElementById("dAlumnosBody"); body.innerHTML = "";
-  const codes = getTeacherStudents(currentTeacherCode);
-  if (!codes.length) { body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280;">No tienes alumnos.</td></tr>`; return; }
-  codes.forEach(code => {
-    const s = state.students[code]; const groups = getStudentGroups(code).map(g => g.nombre).join(", ") || "—";
-    const prom = promedioGeneral(code); const est = estadoCurso(code); const asis = porcentajeAsistencia(asistenciaDe(code));
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td><strong>${code}</strong></td><td>${s.nombre}</td><td>${groups}</td><td>${s.programa || "—"}</td><td>${prom !== null ? prom.toFixed(2) : "—"}</td><td><span class="calif-estado ${est.clase}" style="font-size:.78rem;padding:4px 12px;">${est.texto}</span></td><td>${asis !== null ? asis + "%" : "—"}</td>`;
-    body.appendChild(tr);
-  });
-}
-document.getElementById("dNewAsgForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const criterio = document.getElementById("dAsgCriterio").value; const nombre = document.getElementById("dAsgNombre").value.trim();
-  const fechaInicio = document.getElementById("dAsgInicio").value; const fechaFin = document.getElementById("dAsgFin").value;
-  if (!criterio || !nombre || !fechaInicio || !fechaFin) { alert("Completa todos."); return; }
-  state.assignments.push({ id: "asg_" + Date.now(), criterio, nombre, fechaInicio, fechaFin }); saveState(); e.target.reset();
-});
-function renderTeacherAsignaciones() {
-  const cont = document.getElementById("dAsignacionesLista"); cont.innerHTML = "";
-  if (!state.assignments.length) { cont.innerHTML = `<p style="color:var(--gris);padding:14px 0;">Aún no hay asignaciones.</p>`; return; }
-  const myStudents = getTeacherStudents(currentTeacherCode);
-  CRITERIOS.forEach(c => {
-    const asgs = state.assignments.filter(a => a.criterio === c.id); if (!asgs.length) return;
-    const h = document.createElement("h5"); h.style.cssText = "color:var(--azul);margin:22px 0 10px;font-size:.9rem;font-weight:800;text-transform:uppercase;"; h.textContent = c.nombre; cont.appendChild(h);
-    asgs.forEach(a => {
-      const card = document.createElement("div"); card.className = "asg-card";
-      card.innerHTML = `<div class="asg-card-head"><div class="asg-title"><strong><span class="asg-badge ${c.id}">${c.nombre}</span> ${a.nombre}</strong><small>📅 ${formatearFecha(a.fechaInicio)} → ${formatearFecha(a.fechaFin)}</small></div><div class="asg-actions"><button class="btn btn-mini btn-azul" data-toggle-grade="${a.id}">Calificar</button><button class="btn btn-mini btn-rojo" data-del-asg="${a.id}">Eliminar</button></div></div><div class="asg-grading" id="grading-${a.id}">${myStudents.map(code => { const s = state.students[code]; const cur = (state.grades[code] || {})[a.id]; const group = getStudentGroups(code).find(g => g.teacherCode === currentTeacherCode); const bloqueado = group && group.cerrado; return `<div class="grade-row"><span>${s.nombre} ${bloqueado ? '🔒' : ''} <small>${code}</small></span><input type="number" min="0" max="20" step="0.5" placeholder="—" value="${cur !== undefined && cur !== null ? cur : ''}" data-grade-student="${code}" data-grade-asg="${a.id}" ${bloqueado ? 'disabled' : ''}></div>`; }).join("")}<div style="margin-top:14px;"><button class="btn btn-mini btn-verde" data-save-grades="${a.id}">Guardar</button></div></div>`;
-      card.querySelector(`[data-toggle-grade="${a.id}"]`).addEventListener("click", () => { document.getElementById("grading-" + a.id).classList.toggle("visible"); });
-      card.querySelector(`[data-del-asg="${a.id}"]`).addEventListener("click", () => { if (confirm("¿Eliminar?")) { state.assignments = state.assignments.filter(x => x.id !== a.id); Object.keys(state.grades).forEach(code => { delete state.grades[code][a.id]; }); saveState(); } });
-      card.querySelector(`[data-save-grades="${a.id}"]`).addEventListener("click", () => {
-        card.querySelectorAll(`input[data-grade-asg="${a.id}"]`).forEach(inp => {
-          if (inp.disabled) return;
-          const sc = inp.dataset.gradeStudent; const val = inp.value.trim();
-          if (!state.grades[sc]) state.grades[sc] = {};
-          if (val === "") delete state.grades[sc][a.id];
-          else { const num = parseFloat(val); if (!isNaN(num) && num >= 0 && num <= 20) state.grades[sc][a.id] = num; }
-        });
-        saveState(); alert("✅ Calificaciones guardadas.");
-      });
-      cont.appendChild(card);
-    });
-  });
-}
-function renderTeacherAsistencia() {
-  const groupId = document.getElementById("dAsisGrupo").value; const fi = document.getElementById("dAsisFecha");
-  if (!fi.value) fi.value = new Date().toISOString().slice(0, 10);
-  const lista = document.getElementById("dAsisLista"); const btnGuardar = document.getElementById("dBtnGuardarAsistencia"); lista.innerHTML = "";
-  if (!groupId) { lista.innerHTML = `<p style="padding:20px;text-align:center;color:#6b7280;">Selecciona un grupo.</p>`; btnGuardar.disabled = true; return; }
-  const group = state.groups.find(g => g.id === groupId);
-  if (!group || group.studentCodes.length === 0) { lista.innerHTML = `<p style="padding:20px;text-align:center;color:#6b7280;">Grupo sin alumnos.</p>`; btnGuardar.disabled = true; return; }
-  if (group.cerrado) { lista.innerHTML = `<p style="padding:20px;text-align:center;color:var(--rojo);">🔒 Curso cerrado.</p>`; btnGuardar.disabled = true; return; }
-  btnGuardar.disabled = false;
-  const claseNombre = `${group.nombre} - ${formatearFecha(fi.value)}`;
-  const existentes = {}; state.attendance.filter(a => a.fecha === fi.value && a.clase.includes(group.nombre)).forEach(a => { existentes[a.studentCode] = a.estado; });
-  group.studentCodes.forEach(code => { const s = state.students[code]; if (!s) return; const actual = existentes[code] || "Present"; const row = document.createElement("div"); row.className = "alumno-row"; row.innerHTML = `<div class="alumno-info"><strong>${s.nombre}</strong><small>${code}</small></div><select data-code="${code}"><option value="Present" ${actual === "Present" ? "selected" : ""}>Present</option><option value="Late" ${actual === "Late" ? "selected" : ""}>Late</option><option value="Absent" ${actual === "Absent" ? "selected" : ""}>Absent</option></select>`; lista.appendChild(row); });
-  btnGuardar.dataset.claseNombre = claseNombre; btnGuardar.dataset.groupId = groupId;
-}
-document.getElementById("dAsisGrupo").addEventListener("change", renderTeacherAsistencia);
-document.getElementById("dAsisFecha").addEventListener("change", renderTeacherAsistencia);
-document.getElementById("dBtnGuardarAsistencia").addEventListener("click", () => {
-  const btn = document.getElementById("dBtnGuardarAsistencia"); const groupId = btn.dataset.groupId;
-  if (!groupId) return;
-  const fecha = document.getElementById("dAsisFecha").value; const group = state.groups.find(g => g.id === groupId);
-  if (group.cerrado) { alert("Curso cerrado."); return; }
-  state.attendance = state.attendance.filter(a => !(a.fecha === fecha && a.clase.includes(group.nombre)));
-  document.querySelectorAll("#dAsisLista select").forEach(sel => { state.attendance.push({ fecha, clase: btn.dataset.claseNombre, studentCode: sel.dataset.code, estado: sel.value }); });
-  saveState(); const msg = document.getElementById("dAsisMsg"); msg.classList.add("visible"); setTimeout(() => msg.classList.remove("visible"), 3500);
-});
-function renderTeacherExamsReadOnly() {
-  const cont = document.getElementById("dExamenesLista"); cont.innerHTML = "";
-  const myGroups = getTeacherGroups(currentTeacherCode).map(g => g.id);
-  const exams = (state.exams || []).filter(ex => !ex.grupoId || myGroups.includes(ex.grupoId));
-  if (!exams.length) { cont.innerHTML = `<div class="empty-state">📭 Sin exámenes.</div>`; return; }
-  [...exams].forEach(ex => { const card = document.createElement("div"); card.className = "exam-link-card"; card.innerHTML = `<div class="exam-link-info"><h4>📝 ${ex.nombre}</h4><p>${ex.preguntas ? ex.preguntas.length : 0} preguntas</p></div>`; cont.appendChild(card); });
-}
-document.getElementById("rcGroupSelect").addEventListener("change", (e) => {
-  const groupId = e.target.value; const selStudent = document.getElementById("rcStudentSelect"); selStudent.innerHTML = '<option value="">Selecciona un alumno...</option>';
-  if (!groupId) return; const group = state.groups.find(g => g.id === groupId); if (!group) return;
-  group.studentCodes.forEach(code => { const s = state.students[code]; if (s) { const opt = document.createElement("option"); opt.value = code; opt.textContent = s.nombre; selStudent.appendChild(opt); } });
-});
-document.getElementById("btnGenerateRC").addEventListener("click", () => {
-  const groupId = document.getElementById("rcGroupSelect").value; const studentCode = document.getElementById("rcStudentSelect").value;
-  const comment = document.getElementById("rcComment").value.trim(); const signature = state.signatures[currentTeacherCode];
-  if (!groupId || !studentCode) { alert("Selecciona grupo y alumno."); return; }
-  if (!comment) { alert("Escribe un comentario."); return; }
-  if (!signature) { alert("⚠️ Sube tu firma primero."); return; }
-  const student = state.students[studentCode]; const teacher = state.teachers[currentTeacherCode];
-  const gradesObj = {}; let sum = 0, cnt = 0;
-  CRITERIOS.forEach(c => { const promC = promedioCriterio(studentCode, c.id); if (promC !== null) { gradesObj[c.id] = promC; sum += promC; cnt++; } else gradesObj[c.id] = "—"; });
-  const average = cnt > 0 ? (sum / cnt).toFixed(2) : "—";
-  const date = new Date().toISOString().slice(0, 10);
-  const groupObj = state.groups.find(g => g.id === groupId);
-  const ciclo = groupObj ? (groupObj.programa || groupObj.nombre) : "";
-  currentRcData = { id: "rc_" + Date.now(), studentCode, teacherCode: currentTeacherCode, date, comment, grades: gradesObj, average, signature, ciclo };
-  const preview = document.getElementById("rcPreviewContainer"); preview.classList.add("visible");
-  const lhImg = document.getElementById("rcLetterheadImg"); if (state.letterhead) { lhImg.src = state.letterhead; lhImg.style.display = "inline-block"; } else lhImg.style.display = "none";
-  document.getElementById("rcDate").textContent = formatearFecha(date);
-  document.getElementById("rcStudentName").textContent = student.nombre;
-  document.getElementById("rcStudentUser").textContent = studentCode;
-  document.getElementById("rcStudentGroup").textContent = getStudentGroups(studentCode).map(g => g.nombre).join(", ") || "—";
-  document.getElementById("rcStudentProgram").textContent = student.programa || "—";
-  document.getElementById("rcTeacherName").textContent = teacher.nombre;
-  document.getElementById("rcCommentDisplay").textContent = comment;
-  document.getElementById("rcSignatureImg").src = signature; document.getElementById("rcSignatureImg").style.display = "block";
-  document.getElementById("rcTeacherSignatureName").textContent = teacher.nombre;
-  document.getElementById("rcAverage").textContent = average;
-  const est = getRcEstado(currentRcData);
-  document.getElementById("rcStatusBanner").className = "rc-status-banner " + est.clase;
-  document.getElementById("rcStatusValue").textContent = est.texto;
-  const tbody = document.getElementById("rcGradesBody"); tbody.innerHTML = "";
-  CRITERIOS.forEach(c => { const tr = document.createElement("tr"); tr.innerHTML = `<td>${c.nombre}</td><td style="text-align:right;"><strong>${gradesObj[c.id]}</strong></td>`; tbody.appendChild(tr); });
-  const ctx = document.getElementById("rcChart").getContext('2d'); if (rcChartInstance) rcChartInstance.destroy();
-  rcChartInstance = new Chart(ctx, { type: 'bar', data: { labels: CRITERIOS.map(c => c.nombre), datasets: [{ label: 'Nota', data: CRITERIOS.map(c => gradesObj[c.id] === "—" ? 0 : gradesObj[c.id]), backgroundColor: CRITERIOS.map(c => c.color), borderRadius: 8 }] }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 20 } } } });
-  preview.scrollIntoView({ behavior: "smooth", block: "start" });
-});
-document.getElementById("btnConfirmSendRC").addEventListener("click", () => { if (!currentRcData) return; state.reportCards.push(currentRcData); saveState(); alert("✅ RC enviado."); document.getElementById("rcPreviewContainer").classList.remove("visible"); document.getElementById("rcComment").value = ""; currentRcData = null; });
-document.getElementById("btnDownloadRC").addEventListener("click", () => { if (currentRcData) imprimirReportCard(currentRcData); });
-function renderTeacherHistorialRC() {
-  const cont = document.getElementById("dHistorialRCLista"); cont.innerHTML = "";
-  const myRCs = state.reportCards.filter(rc => rc.teacherCode === currentTeacherCode);
-  if (!myRCs.length) { cont.innerHTML = `<div class="empty-state">📭 Sin RC generados.</div>`; return; }
-  myRCs.sort((a, b) => b.date.localeCompare(a.date));
-  let html = `<div class="tabla-wrap" style="box-shadow:none;border:1px solid var(--borde);"><table style="min-width:900px;"><thead><tr><th>Fecha</th><th>Alumno</th><th>Código</th><th>Ciclo</th><th>Nota</th><th>Estado</th></tr></thead><tbody>`;
-  myRCs.forEach(rc => { const student = state.students[rc.studentCode]; const est = getRcEstado(rc); html += `<tr><td>${formatearFecha(rc.date)}</td><td>${student ? student.nombre : '—'}</td><td><code>${rc.studentCode}</code></td><td>${rc.ciclo || '—'}</td><td><strong>${rc.average}</strong></td><td><span class="calif-estado ${est.clase}" style="font-size:.78rem;padding:4px 12px;">${est.texto}</span></td></tr>`; });
-  html += `</tbody></table></div>`; cont.innerHTML = html;
-}
-function renderTeacherPago() {
-  const resumen = document.getElementById("dPagoResumen"); const gruposLista = document.getElementById("dPagoGruposLista");
-  if (!resumen || !gruposLista) return;
-  const myGroups = getTeacherGroups(currentTeacherCode); const pagoHora = parseFloat(currentTeacher.pagoHora) || 0;
-  const totalHoras = myGroups.reduce((s, g) => s + (parseInt(g.totalHoras) || 0), 0); const monto = totalHoras * pagoHora;
-  resumen.innerHTML = `<div class="resumen-card morado"><div class="et">Pago/hora</div><div class="val">S/ ${pagoHora.toFixed(2)}</div></div><div class="resumen-card azul"><div class="et">Total horas</div><div class="val">${totalHoras} h</div></div><div class="resumen-card verde"><div class="et">Monto estimado</div><div class="val">S/ ${monto.toFixed(2)}</div></div><div class="resumen-card amarillo"><div class="et">Fecha de pago</div><div class="val" style="font-size:1.05rem;">${fechaFinDeMes()}</div></div>`;
-  if (!myGroups.length) { gruposLista.innerHTML = `<div class="empty-state">📚 Sin grupos.</div>`; return; }
-  let html = `<div class="tabla-wrap" style="box-shadow:none;border:1px solid var(--borde);"><table style="min-width:640px;"><thead><tr><th>Grupo</th><th>Programa</th><th>Nivel</th><th>Horas/ciclo</th><th>Subtotal</th></tr></thead><tbody>`;
-  myGroups.forEach(g => { const nivel = getNivelInfo(g.nivel); const horas = parseInt(g.totalHoras) || 0; html += `<tr><td><strong>${g.nombre}</strong></td><td>${g.programa || '—'}</td><td>${nivel.nombre}</td><td>${horas} h</td><td><strong>S/ ${(horas * pagoHora).toFixed(2)}</strong></td></tr>`; });
-  html += `</tbody></table></div>`; gruposLista.innerHTML = html;
-}
-document.getElementById("btnGenerarBoleta").addEventListener("click", () => {
-  const pagoHora = parseFloat(currentTeacher.pagoHora) || 0; const myGroups = getTeacherGroups(currentTeacherCode);
-  const totalHoras = myGroups.reduce((s, g) => s + (parseInt(g.totalHoras) || 0), 0); const monto = totalHoras * pagoHora;
-  const preview = document.getElementById("boletaPreviewContainer"); preview.classList.add("visible");
-  const contImgs = (state.oficinaImagenes && state.oficinaImagenes.contabilidad) || { sello: "", membrete: "" };
-  const lhImg = document.getElementById("boletaLetterheadImg"); if (contImgs.membrete) { lhImg.src = contImgs.membrete; lhImg.style.display = "block"; } else lhImg.style.display = "none";
-  document.getElementById("boletaTeacherName").textContent = currentTeacher.nombre;
-  document.getElementById("boletaTeacherCode").textContent = currentTeacherCode;
-  document.getElementById("boletaTeacherArea").textContent = currentTeacher.area || "—";
-  document.getElementById("boletaFechaPago").textContent = fechaFinDeMes();
-  document.getElementById("boletaBaseHora").textContent = pagoHora.toFixed(2);
-  document.getElementById("boletaTotalHoras").textContent = totalHoras;
-  document.getElementById("boletaMontoTotal").textContent = monto.toFixed(2);
-  const tbody = document.getElementById("boletaGruposBody"); tbody.innerHTML = "";
-  myGroups.forEach(g => { const nivel = getNivelInfo(g.nivel); const tr = document.createElement("tr"); tr.innerHTML = `<td>${g.nombre}</td><td>${g.programa || '—'}</td><td>${nivel.nombre}</td><td>${g.frecuencia || '—'}</td><td style="text-align:right;"><strong>${g.totalHoras || 0}</strong></td>`; tbody.appendChild(tr); });
-  const sigImg = document.getElementById("boletaSignatureImg"); if (contImgs.sello) { sigImg.src = contImgs.sello; sigImg.style.display = "block"; } else sigImg.style.display = "none";
-  preview.scrollIntoView({ behavior: "smooth", block: "start" });
-});
-document.getElementById("btnImprimirBoleta").addEventListener("click", () => {
-  const iframe = document.createElement('iframe'); iframe.style.position = 'absolute'; iframe.style.width = '0'; iframe.style.height = '0'; iframe.style.border = 'none';
-  document.body.appendChild(iframe); const doc = iframe.contentWindow.document; doc.open();
-  doc.write(`<html><head><title>Boleta</title><style>body{font-family:'Segoe UI',sans-serif;padding:20px}</style></head><body>${document.getElementById("boletaPrintable").innerHTML}</body></html>`); doc.close();
-  setTimeout(() => { iframe.contentWindow.focus(); iframe.contentWindow.print(); document.body.removeChild(iframe); }, 500);
-});
-document.getElementById("btnDescargarBoleta").addEventListener("click", () => {
-  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Boleta</title><style>body{font-family:'Segoe UI',sans-serif;padding:20px;max-width:900px;margin:0 auto}</style></head><body>${document.getElementById("boletaPrintable").innerHTML}</body></html>`;
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8' }); const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = `Boleta_${currentTeacherCode}_${new Date().toISOString().slice(0,10)}.html`;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-});
-
-/* ============================================================
-   OFICINA IMÁGENES
-   ============================================================ */
-function renderOficinaImagenes(subportal) {
-  const data = (state.oficinaImagenes && state.oficinaImagenes[subportal]) || { sello: "", membrete: "" };
-  const prefix = subportal === "marketing" ? "mkt" : subportal === "contabilidad" ? "cont" : "dir";
-  const selloBox = document.getElementById(prefix + "SelloPreview"); const memBox = document.getElementById(prefix + "MembretePreview");
-  if (selloBox) selloBox.innerHTML = data.sello ? `<img src="${data.sello}">` : `<p style="color:var(--gris);font-size:0.9rem;">Sin sello.</p>`;
-  if (memBox) memBox.innerHTML = data.membrete ? `<img src="${data.membrete}">` : `<p style="color:var(--gris);font-size:0.9rem;">Sin membrete.</p>`;
-}
-async function handleOficinaUpload(subportal, tipo) {
-  const prefix = subportal === "marketing" ? "mkt" : subportal === "contabilidad" ? "cont" : "dir";
-  const fileInput = document.getElementById(prefix + (tipo === "sello" ? "SelloFile" : "MembreteFile"));
-  if (!fileInput.files || !fileInput.files[0]) { alert("Selecciona imagen."); return; }
-  if (fileInput.files[0].size > MAX_IMG_SIZE) { alert("Máximo 2MB."); return; }
-  try { const carpeta = tipo === "sello" ? "sellos" : "membretes"; const url = await procesarImagen(fileInput.files[0], carpeta); if (!state.oficinaImagenes[subportal]) state.oficinaImagenes[subportal] = { sello: "", membrete: "" }; state.oficinaImagenes[subportal][tipo] = url; saveState(); renderOficinaImagenes(subportal); alert("✅ Guardado."); fileInput.value = ""; } catch (e) { alert("Error: " + e.message); }
-}
-document.getElementById("btnSaveMktSello").addEventListener("click", () => handleOficinaUpload("marketing", "sello"));
-document.getElementById("btnSaveMktMembrete").addEventListener("click", () => handleOficinaUpload("marketing", "membrete"));
-document.getElementById("btnSaveContSello").addEventListener("click", () => handleOficinaUpload("contabilidad", "sello"));
-document.getElementById("btnSaveContMembrete").addEventListener("click", () => handleOficinaUpload("contabilidad", "membrete"));
-document.getElementById("btnSaveDirSello").addEventListener("click", () => handleOficinaUpload("direccion", "sello"));
-document.getElementById("btnSaveDirMembrete").addEventListener("click", () => handleOficinaUpload("direccion", "membrete"));
-
-/* ============================================================
-   VISTA ADMIN
-   ============================================================ */
-function refreshAdminView() {
-  renderAdminAlumnos(); renderAdminDocentes(); renderAdminGrupos(); renderAdminMatriculas();
-  renderAdminCourses(); renderAdminExams(); renderAdminResumen();
-  refreshAdminTeacherSelects(); refreshAdminExamGroups(); renderAdminLetterhead(); renderAdminFounder();
-  renderMarketingGallery();
-  renderOficinaImagenes("marketing"); renderOficinaImagenes("contabilidad"); renderOficinaImagenes("direccion");
-}
-function refreshAdminTeacherSelects() {
-  const sel = document.getElementById("admGroupTeacher");
-  if (sel) { const cur = sel.value; sel.innerHTML = '<option value="">Selecciona docente</option>'; Object.keys(state.teachers).forEach(code => { const t = state.teachers[code]; const opt = document.createElement("option"); opt.value = code; opt.textContent = `${t.nombre} (${code})`; sel.appendChild(opt); }); if (cur && state.teachers[cur]) sel.value = cur; }
-  const selAlu = document.getElementById("admAlumnoGrupo");
-  if (selAlu) { const cur = selAlu.value; selAlu.innerHTML = '<option value="">Sin grupo</option>'; state.groups.forEach(g => { const nivel = getNivelInfo(g.nivel); const opt = document.createElement("option"); opt.value = g.id; opt.textContent = `${g.nombre} · ${nivel.nombre}`; selAlu.appendChild(opt); }); if (cur) selAlu.value = cur; }
-}
-function refreshAdminExamGroups() { const sel = document.getElementById("admExamGroup"); if (!sel) return; const cur = sel.value; sel.innerHTML = '<option value="">Selecciona grupo</option>'; state.groups.forEach(g => { const nivel = getNivelInfo(g.nivel); const opt = document.createElement("option"); opt.value = g.id; opt.textContent = `${g.nombre} · ${nivel.nombre}`; sel.appendChild(opt); }); if (cur) sel.value = cur; }
-function renderAdminAlumnos() {
-  const body = document.getElementById("admAlumnosBody"); body.innerHTML = "";
-  const codes = Object.keys(state.students);
-  if (!codes.length) { body.innerHTML = `<tr><td colspan="12" style="text-align:center;color:#6b7280;">No hay alumnos.</td></tr>`; return; }
-  codes.forEach(code => {
-    const s = state.students[code]; const groups = getStudentGroups(code);
-    const groupsHtml = groups.length ? groups.map(g => { const n = getNivelInfo(g.nivel); return `<span class="group-nivel ${n.clase}" style="margin-right:4px;">${g.nombre}</span>`; }).join("") : `<span style="color:var(--gris);font-size:.82rem;">Sin grupo</span>`;
-    const evidenciaBtn = s.dniPhoto ? `<button class="btn btn-mini btn-azul" onclick="showImageViewer('${s.dniPhoto}')">📄 Ver DNI</button>` : `<span style="color:var(--rojo);font-size:.8rem;">Pendiente</span>`;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td><code>${code}</code></td><td>${s.nombre}</td><td>${s.email || "—"}</td><td>${groupsHtml}</td><td>${s.programa || "—"}</td><td>${s.year || "—"}</td><td>${s.month || "—"}</td><td>${s.day || "—"}</td><td>${s.dni || "—"}</td><td>${evidenciaBtn}</td><td><div class="pwd-cell"><span class="pwd-hidden" data-pwd="${code}">••••••••</span><button class="eye-btn" data-toggle-pwd="${code}">👁️</button></div></td><td><div class="acciones-cell"><button class="btn btn-mini btn-azul" data-reset-pwd="${code}">🔑</button><button class="btn btn-mini btn-morado" data-edit-alumno="${code}">✏️ Editar</button><button class="btn btn-mini btn-rojo" data-del-alumno="${code}">🗑️</button></div></td>`;
-    body.appendChild(tr);
-  });
-  body.querySelectorAll("[data-toggle-pwd]").forEach(btn => btn.addEventListener("click", () => { const code = btn.dataset.togglePwd; const span = body.querySelector(`[data-pwd="${code}"]`); if (span.classList.contains("pwd-hidden")) { span.textContent = state.students[code].password; span.className = "pwd-visible"; } else { span.textContent = "••••••••"; span.className = "pwd-hidden"; } }));
-  body.querySelectorAll("[data-reset-pwd]").forEach(btn => btn.addEventListener("click", () => { const code = btn.dataset.resetPwd; const nueva = genPassword(); if (confirm(`¿Resetear contraseña?`)) { state.students[code].password = nueva; saveState(); alert(`Nueva: ${nueva}`); } }));
-  body.querySelectorAll("[data-edit-alumno]").forEach(btn => btn.addEventListener("click", () => abrirEditar(btn.dataset.editAlumno, "alumno")));
-  body.querySelectorAll("[data-del-alumno]").forEach(btn => btn.addEventListener("click", () => { const code = btn.dataset.delAlumno; if (confirm(`¿Eliminar?`)) { delete state.students[code]; delete state.grades[code]; state.attendance = state.attendance.filter(a => a.studentCode !== code); state.groups.forEach(g => { g.studentCodes = g.studentCodes.filter(c => c !== code); }); if (state.examResults) Object.keys(state.examResults).forEach(id => { delete state.examResults[id][code]; }); state.reportCards = state.reportCards.filter(rc => rc.studentCode !== code); saveState(); } }));
-}
-function renderAdminDocentes() {
-  const body = document.getElementById("admDocentesBody"); body.innerHTML = "";
-  const codes = Object.keys(state.teachers);
-  if (!codes.length) { body.innerHTML = `<tr><td colspan="10" style="text-align:center;color:#6b7280;">No hay docentes.</td></tr>`; return; }
-  codes.forEach(code => {
-    const t = state.teachers[code]; const misGrupos = getTeacherGroups(code);
-    const gruposHtml = misGrupos.length ? misGrupos.map(g => { const n = getNivelInfo(g.nivel); return `<span class="group-nivel ${n.clase}" style="margin-right:4px;">${g.nombre}</span>`; }).join("") : `<span style="color:var(--gris);font-size:.82rem;">Sin grupos</span>`;
-    const evidenciaBtn = t.dniPhoto ? `<button class="btn btn-mini btn-azul" onclick="showImageViewer('${t.dniPhoto}')">📄 Ver DNI</button>` : `<span style="color:var(--rojo);font-size:.8rem;">Pendiente</span>`;
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td><code>${code}</code></td><td>${t.nombre}</td><td>${t.email || "—"}</td><td>${t.area || "—"}</td><td><strong style="color:var(--morado);">S/ ${(parseFloat(t.pagoHora) || 0).toFixed(2)}</strong></td><td>${gruposHtml}</td><td>${t.dni || "—"}</td><td>${evidenciaBtn}</td><td><div class="pwd-cell"><span class="pwd-hidden" data-pwd-t="${code}">••••••••</span><button class="eye-btn" data-toggle-pwd-t="${code}">👁️</button></div></td><td><div class="acciones-cell"><button class="btn btn-mini btn-azul" data-reset-pwd-t="${code}">🔑</button><button class="btn btn-mini btn-morado" data-edit-docente="${code}">✏️ Editar</button><button class="btn btn-mini btn-rojo" data-del-docente="${code}">🗑️</button></div></td>`;
-    body.appendChild(tr);
-  });
-  body.querySelectorAll("[data-toggle-pwd-t]").forEach(btn => btn.addEventListener("click", () => { const code = btn.dataset.togglePwdT; const span = body.querySelector(`[data-pwd-t="${code}"]`); if (span.classList.contains("pwd-hidden")) { span.textContent = state.teachers[code].password; span.className = "pwd-visible"; } else { span.textContent = "••••••••"; span.className = "pwd-hidden"; } }));
-  body.querySelectorAll("[data-reset-pwd-t]").forEach(btn => btn.addEventListener("click", () => { const code = btn.dataset.resetPwdT; const nueva = genPassword(); if (confirm(`¿Resetear contraseña?`)) { state.teachers[code].password = nueva; saveState(); alert(`Nueva: ${nueva}`); } }));
-  body.querySelectorAll("[data-edit-docente]").forEach(btn => btn.addEventListener("click", () => abrirEditar(btn.dataset.editDocente, "docente")));
-  body.querySelectorAll("[data-del-docente]").forEach(btn => btn.addEventListener("click", () => { const code = btn.dataset.delDocente; const grupos = getTeacherGroups(code); if (grupos.length > 0) { alert(`No puedes eliminar, tiene grupos.`); return; } if (confirm(`¿Eliminar?`)) { delete state.teachers[code]; delete state.signatures[code]; saveState(); } }));
-}
-function renderAdminGrupos() {
-  const cont = document.getElementById("admGroupsLista"); cont.innerHTML = "";
-  if (!state.groups.length) { cont.innerHTML = `<div class="empty-state">📚 Aún no has creado grupos.</div>`; return; }
-  state.groups.forEach(g => {
-    const nivel = getNivelInfo(g.nivel); const teacher = state.teachers[g.teacherCode]; const teacherName = teacher ? teacher.nombre : "Sin docente";
-    const studentsNotInGroup = Object.keys(state.students).filter(c => !g.studentCodes.includes(c));
-    const cerrado = g.cerrado === true;
-    const card = document.createElement("div"); card.className = "group-card" + (cerrado ? " cerrado" : "");
-    card.innerHTML = `<div class="group-card-head"><div class="group-info"><span class="group-nivel ${nivel.clase}">${nivel.nombre}</span>${cerrado ? `<span class="cerrado-badge">🔒 Cerrado ${g.fechaCierre ? '(' + formatearFecha(g.fechaCierre) + ')' : ''}</span>` : ''}<strong>${g.nombre}</strong><small>Programa: ${g.programa || '—'} · Docente: <span class="teacher-tag">${teacherName}</span> · ${g.studentCodes.length} alumno(s)</small><small>Frecuencia: ${g.frecuencia || '—'} · Horario: ${g.horario || '—'} · Total: ${g.totalHoras || 0} h/ciclo</small></div><div class="asg-actions">${cerrado ? `<button class="btn btn-mini btn-verde" data-reabrir-grupo="${g.id}">🔓 Reabrir</button>` : ''}<button class="btn btn-mini btn-morado" data-edit-group="${g.id}">✏️ Editar</button><button class="btn btn-mini btn-rojo" data-del-group="${g.id}">🗑️</button></div></div><div class="group-card-body"><h5>Alumnos</h5><div class="student-chips">${g.studentCodes.length === 0 ? '<span style="color:var(--gris);font-size:.85rem;">Sin alumnos</span>' : g.studentCodes.map(code => { const s = state.students[code]; if (!s) return ""; return `<span class="student-chip">${s.nombre} <button data-remove-student="${code}" data-group-id="${g.id}">×</button></span>`; }).join("")}</div><div class="group-add-student"><select data-add-student-select="${g.id}"><option value="">Seleccionar alumno...</option>${studentsNotInGroup.map(code => { const s = state.students[code]; return `<option value="${code}">${s.nombre} (${code})</option>`; }).join("")}</select><button class="btn btn-mini btn-verde" data-add-student-btn="${g.id}">+ Agregar</button></div></div>`;
-    cont.appendChild(card);
-  });
-  cont.querySelectorAll("[data-reabrir-grupo]").forEach(btn => btn.addEventListener("click", () => reabrirCurso(btn.dataset.reabrirGrupo)));
-  cont.querySelectorAll("[data-del-group]").forEach(btn => btn.addEventListener("click", () => { const group = state.groups.find(x => x.id === btn.dataset.delGroup); if (confirm(`¿Eliminar grupo?`)) { state.groups = state.groups.filter(g => g.id !== group.id); saveState(); } }));
-  cont.querySelectorAll("[data-edit-group]").forEach(btn => btn.addEventListener("click", () => abrirEditarGrupo(btn.dataset.editGroup)));
-  cont.querySelectorAll("[data-remove-student]").forEach(btn => btn.addEventListener("click", () => { const group = state.groups.find(g => g.id === btn.dataset.groupId); if (group) { group.studentCodes = group.studentCodes.filter(c => c !== btn.dataset.removeStudent); saveState(); } }));
-  cont.querySelectorAll("[data-add-student-btn]").forEach(btn => btn.addEventListener("click", () => { const gid = btn.dataset.addStudentBtn; const sel = cont.querySelector(`[data-add-student-select="${gid}"]`); const code = sel.value; if (!code) return; const group = state.groups.find(g => g.id === gid); if (group && !group.studentCodes.includes(code)) { group.studentCodes.push(code); saveState(); } }));
-}
-document.getElementById("admNewGroupForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const nombre = document.getElementById("admGroupNombre").value.trim(); const programa = document.getElementById("admGroupPrograma").value.trim();
-  const nivel = document.getElementById("admGroupNivel").value; const frecuencia = document.getElementById("admGroupFrecuencia").value.trim();
-  const horario = document.getElementById("admGroupHorario").value.trim(); const totalHoras = parseInt(document.getElementById("admGroupTotalHoras").value) || 0;
-  const teacherCode = document.getElementById("admGroupTeacher").value;
-  if (!nombre || !programa || !nivel || !frecuencia || !horario || !totalHoras || !teacherCode) { alert("Completa todos."); return; }
-  state.groups.push({ id: "grp_" + Date.now(), nombre, programa, nivel, frecuencia, horario, totalHoras, teacherCode, studentCodes: [], cerrado: false });
-  saveState(); e.target.reset();
-});
-function renderAdminMatriculas() {
-  const body = document.getElementById("admMatriculasBody"); body.innerHTML = "";
-  if (!state.registrations || !state.registrations.length) { body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6b7280;">Sin registros.</td></tr>`; return; }
-  [...state.registrations].sort((a, b) => b.fecha.localeCompare(a.fecha)).forEach(r => {
-    const tipoLabel = r.tipo === 'cita' ? '🩺 Cita' : r.tipo === 'preinscripcion' ? '🆕 Pre-inscripción' : '📝 Matrícula';
-    const origenLabel = r.origen ? ` · <em style="color:var(--azul);">${r.origen}</em>` : '';
-    const voucherBtn = r.voucher ? `<button class="btn btn-mini btn-azul" onclick="showImageViewer('${r.voucher}')">📄 Ver</button>` : `<span style="color:var(--gris);font-size:.8rem;">—</span>`;
-    const dniBtn = r.dniPhoto ? `<button class="btn btn-mini btn-azul" onclick="showImageViewer('${r.dniPhoto}')" style="margin-left:4px;">📄 DNI</button>` : '';
-    const tr = document.createElement("tr");
-    tr.innerHTML = `<td><strong>${tipoLabel}</strong></td><td>${r.nombre}</td><td>${r.email}</td><td>${r.telefono}</td><td>${r.programa}${origenLabel} <br><small>${formatearFecha(r.fecha)}</small></td><td>${voucherBtn}${dniBtn}</td><td><button class="btn btn-mini btn-rojo" data-del-reg="${r.id}">🗑️</button></td>`;
-    body.appendChild(tr);
-  });
-  body.querySelectorAll("[data-del-reg]").forEach(btn => btn.addEventListener("click", () => { if (confirm("¿Eliminar?")) { state.registrations = state.registrations.filter(r => r.id !== btn.dataset.delReg); saveState(); } }));
-}
-function renderAdminCourses() {
-  const cont = document.getElementById("admCoursesList"); if (!cont) return;
-  if (!state.courses.length) { cont.innerHTML = `<p style="padding:20px;text-align:center;color:var(--gris);">Sin cursos.</p>`; return; }
-  let html = `<table class="admin-table" style="min-width:760px;"><thead><tr><th>Programa</th><th>Día(s)</th><th>Horario</th><th>Modalidad</th><th>Tipo</th><th>Cupo</th><th>Acción</th></tr></thead><tbody>`;
-  state.courses.forEach(c => { const tipoLabel = c.tipo === 'cita' ? '🩺 Cita' : '📝 Matrícula'; const cupoInfo = c.tipo === 'cita' ? '—' : `${c.max || 12}`; html += `<tr><td><strong>${c.programa}</strong></td><td>${c.dia || '—'}</td><td>${c.horario || '—'}</td><td>${c.modalidad}</td><td>${tipoLabel}</td><td>${cupoInfo}</td><td><button class="btn btn-mini btn-rojo" data-del-course="${c.id}">🗑️</button></td></tr>`; });
-  html += `</tbody></table>`; cont.innerHTML = html;
-  cont.querySelectorAll("[data-del-course]").forEach(btn => btn.addEventListener("click", () => { const course = state.courses.find(c => c.id === btn.dataset.delCourse); if (confirm(`¿Eliminar curso?`)) { state.courses = state.courses.filter(c => c.id !== course.id); saveState(); renderAdminCourses(); } }));
-}
-document.getElementById("admNewCourseForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const programa = document.getElementById("admCoursePrograma").value.trim(); const dia = document.getElementById("admCourseDia").value.trim();
-  const horario = document.getElementById("admCourseHorario").value.trim(); const modalidad = document.getElementById("admCourseModalidad").value;
-  const tipo = document.getElementById("admCourseTipo").value; const max = parseInt(document.getElementById("admCourseMax").value) || 12;
-  if (!programa) { alert("Completa el programa."); return; }
-  state.courses.push({ id: "sch_" + Date.now(), programa, dia, horario, modalidad, tipo, max });
-  saveState(); e.target.reset(); document.getElementById("admCourseMax").value = 12;
-});
-function renderAdminAsistencia() {
-  const groupId = document.getElementById("admAsisGrupo").value; const cont = document.getElementById("admAsisResumen");
-  if (!groupId) { cont.innerHTML = `<p style="padding:20px;text-align:center;color:var(--gris);">Selecciona un grupo.</p>`; return; }
-  const group = state.groups.find(g => g.id === groupId);
-  if (!group || group.studentCodes.length === 0) { cont.innerHTML = `<p style="padding:20px;text-align:center;color:var(--gris);">Grupo sin alumnos.</p>`; return; }
-  let html = `<table class="admin-table" style="min-width:640px;"><thead><tr><th>Alumno</th><th>Present</th><th>Late</th><th>Absent</th><th>%</th></tr></thead><tbody>`;
-  group.studentCodes.forEach(code => {
-    const s = state.students[code]; if (!s) return;
-    const regs = state.attendance.filter(a => a.studentCode === code && a.clase.includes(group.nombre));
-    let p = 0, l = 0, a = 0; regs.forEach(r => { if (r.estado === "Present") p++; else if (r.estado === "Late") l++; else if (r.estado === "Absent") a++; });
-    const total = p + l + a; const pct = total > 0 ? Math.round(((p + l) / total) * 100) : null;
-    html += `<tr><td><strong>${s.nombre}</strong><br><small>${code}</small></td><td>${p}</td><td>${l}</td><td>${a}</td><td><strong>${pct !== null ? pct + "%" : "—"}</strong></td></tr>`;
-  });
-  html += `</tbody></table>`; cont.innerHTML = html;
-}
-document.getElementById("admAsisGrupo").addEventListener("change", renderAdminAsistencia);
-function renderAdminLetterhead() { const box = document.getElementById("letterheadPreviewBox"); if (state.letterhead) box.innerHTML = `<img src="${state.letterhead}">`; else box.innerHTML = `<p style="color:var(--gris);font-size:0.9rem;">Sin membrete.</p>`; }
-document.getElementById("btnSaveLetterhead").addEventListener("click", async () => {
-  const fileInput = document.getElementById("adminLetterheadFile"); if (!fileInput.files || !fileInput.files[0]) return;
- try { const url = await procesarImagen(fileInput.files[0], "membretes"); state.letterhead = url; saveState(); renderAdminLetterhead(); document.getElementById("letterheadMsg").classList.add("visible"); setTimeout(() => document.getElementById("letterheadMsg").classList.remove("visible"), 3000); fileInput.value = ""; } catch (e) { alert("Error."); }
-});
-function renderAdminFounder() { const box = document.getElementById("founderPreviewBox"); if (state.founderPhoto) box.innerHTML = `<img src="${state.founderPhoto}">`; else box.innerHTML = `<p style="color:var(--gris);font-size:0.9rem;">Sin foto.</p>`; }
-document.getElementById("btnSaveFounder").addEventListener("click", async () => {
-  const fileInput = document.getElementById("adminFounderFile"); if (!fileInput.files || !fileInput.files[0]) return;
-  try { const url = await procesarImagen(fileInput.files[0], "fundador"); state.founderPhoto = url; saveState(); renderAdminFounder(); renderFounderPhoto(); document.getElementById("founderMsg").classList.add("visible"); setTimeout(() => document.getElementById("founderMsg").classList.remove("visible"), 3000); fileInput.value = ""; } catch (e) { alert("Error."); }
-});
-document.getElementById("admBtnAddPregunta").addEventListener("click", () => {
-  const cont = document.getElementById("admExamPreguntas"); const div = document.createElement("div"); div.className = "qblock";
-  div.innerHTML = `<div class="qblock-head"><strong>Pregunta</strong><button type="button" class="btn btn-mini btn-rojo btn-remove-q">✕</button></div><div class="campo"><label>Enunciado</label><input type="text" class="q-enunciado"></div><div class="opciones-inputs"><input type="text" class="q-op" placeholder="A"><input type="text" class="q-op" placeholder="B"><input type="text" class="q-op" placeholder="C"><input type="text" class="q-op" placeholder="D"></div><div class="campo"><label>Correcta</label><select class="q-correcta"><option value="0">A</option><option value="1">B</option><option value="2">C</option><option value="3">D</option></select></div>`;
-  div.querySelector(".btn-remove-q").addEventListener("click", () => div.remove());
-  cont.appendChild(div);
-});
-document.getElementById("admNewExamForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const nombre = document.getElementById("admExamNombre").value.trim(); const grupoId = document.getElementById("admExamGroup").value;
-  if (!nombre || !grupoId) { alert("Completa nombre y grupo."); return; }
-  const blocks = [...document.querySelectorAll("#admExamPreguntas .qblock")]; if (!blocks.length) { alert("Agrega preguntas."); return; }
-  const preguntas = blocks.map(b => ({ enunciado: b.querySelector(".q-enunciado").value.trim(), opciones: [...b.querySelectorAll(".q-op")].map(i => i.value.trim()), correcta: Number(b.querySelector(".q-correcta").value) }));
-  if (preguntas.some(p => !p.enunciado || p.opciones.some(o => !o))) { alert("Completa todas las preguntas."); return; }
-  const examId = "exam_" + Date.now(); const asgId = "asg_exam_" + Date.now();
-  state.exams.push({ id: examId, nombre, grupoId, assignmentId: asgId, fechaPublicacion: new Date().toISOString().slice(0, 10), preguntas });
-  state.assignments.push({ id: asgId, criterio: "final_exam", nombre: "📝 " + nombre, fechaInicio: new Date().toISOString().slice(0, 10), esExamen: true, examId });
-  if (!state.examResults) state.examResults = {}; state.examResults[examId] = {};
-  saveState(); e.target.reset(); document.getElementById("admExamPreguntas").innerHTML = "";
-});
-function renderAdminExams() { const cont = document.getElementById("admExamsLista"); if (!cont) return; cont.innerHTML = `<div class="empty-state">${(state.exams || []).length ? state.exams.length + " exámenes publicados." : "Sin exámenes."}</div>`; }
-function renderAdminResumen() {
-  document.getElementById("admStatAlumnos").textContent = Object.keys(state.students).length;
-  document.getElementById("admStatDocentes").textContent = Object.keys(state.teachers).length;
-  document.getElementById("admStatGrupos").textContent = state.groups.length;
-  document.getElementById("admStatAsgs").textContent = state.assignments.length;
-  document.getElementById("admStatExams").textContent = (state.exams || []).length;
-  const porNivel = document.getElementById("admGruposPorNivel"); porNivel.innerHTML = "";
-  NIVELES.forEach(n => { const grupos = state.groups.filter(g => g.nivel === n.id); const total = grupos.reduce((s, g) => s + g.studentCodes.length, 0); const card = document.createElement("div"); card.className = "resumen-card " + (n.id === "basico" ? "verde" : n.id === "intermedio" ? "azul" : "amarillo"); card.innerHTML = `<div class="et">${n.nombre}</div><div class="val">${grupos.length}</div><div style="font-size:.8rem;color:var(--gris);">${total} alumnos</div>`; porNivel.appendChild(card); });
-  const body = document.getElementById("admResumenBody"); body.innerHTML = "";
-  Object.keys(state.students).forEach(code => { const s = state.students[code]; const groups = getStudentGroups(code).map(g => g.nombre).join(", ") || "—"; const prom = promedioGeneral(code); const est = estadoCurso(code); const asis = porcentajeAsistencia(asistenciaDe(code)); const tr = document.createElement("tr"); tr.innerHTML = `<td>${s.nombre}</td><td>${groups}</td><td>${prom !== null ? prom.toFixed(2) : "—"}</td><td><span class="calif-estado ${est.clase}" style="font-size:.78rem;padding:4px 12px;">${est.texto}</span></td><td>${asis !== null ? asis + "%" : "—"}</td>`; body.appendChild(tr); });
-}
-
-/* ============================================================
-   MARKETING
-   ============================================================ */
-function renderMarketingGallery() {
-  const cont = document.getElementById("mktGalleryGrid"); if (!cont) return;
-  cont.innerHTML = "";
-  if (!state.marketingPhotos.length) { cont.innerHTML = `<div class="empty-state" style="grid-column: 1 / -1;">📸 Sin fotos.</div>`; return; }
-  state.marketingPhotos.forEach(p => { const div = document.createElement("div"); div.className = "gallery-item"; div.style.position = "relative"; div.innerHTML = `<img src="${p.src}">${p.title ? `<div class="gallery-item-caption">${p.title}</div>` : ''}<button class="btn btn-mini btn-rojo" data-del-photo="${p.id}" style="position:absolute; top:8px; right:8px; z-index:2;">🗑️</button>`; cont.appendChild(div); });
-  cont.querySelectorAll("[data-del-photo]").forEach(btn => btn.addEventListener("click", () => { if (confirm("¿Eliminar foto?")) { state.marketingPhotos = state.marketingPhotos.filter(p => p.id !== btn.dataset.delPhoto); saveState(); renderMarketingGallery(); renderPublicGallery(); } }));
-}
-document.getElementById("btnUploadPhoto").addEventListener("click", async () => {
-  const titleInput = document.getElementById("mktPhotoTitle"); const fileInput = document.getElementById("mktPhotoFile"); const files = fileInput.files;
-  if (!files || !files.length) { alert("Selecciona imágenes."); return; }
-  let count = 0; const title = titleInput.value.trim();
-  for (let i = 0; i < files.length && i < 3; i++) { const file = files[i]; if (file.size > MAX_IMG_SIZE) { alert(`${file.name} muy grande.`); continue; } try { const url = await procesarImagen(file, "galeria"); state.marketingPhotos.push({ id: "photo_" + Date.now() + "_" + i, title, src: url }); count++; } catch (e) {} }
-  if (count > 0) { saveState(); renderMarketingGallery(); renderPublicGallery(); titleInput.value = ""; fileInput.value = ""; alert(`✅ ${count} foto(s) subida(s).`); }
-});
-
-/* ============================================================
-   GENERAR Y COPIAR
-   ============================================================ */
-document.querySelectorAll("[data-gen-user]").forEach(btn => btn.addEventListener("click", () => { const tipo = btn.dataset.genUser; const year = document.getElementById(tipo === "alumno" ? "admAlumnoYear" : "admDocenteYear").value; const month = document.getElementById(tipo === "alumno" ? "admAlumnoMonth" : "admDocenteMonth").value; const day = document.getElementById(tipo === "alumno" ? "admAlumnoDay" : "admDocenteDay").value; const userInput = document.getElementById(tipo === "alumno" ? "admAlumnoUser" : "admDocenteUser"); const existing = tipo === "alumno" ? state.students : state.teachers; userInput.value = genUsernameByDate(year, month, day, existing); }));
-document.querySelectorAll("[data-gen-pass]").forEach(btn => btn.addEventListener("click", () => { const tipo = btn.dataset.genPass; const dni = document.getElementById(tipo === "alumno" ? "admAlumnoDni" : "admDocenteDni").value; document.getElementById(tipo === "alumno" ? "admAlumnoPass" : "admDocentePass").value = dni || ""; }));
-document.querySelectorAll("[data-copy]").forEach(btn => btn.addEventListener("click", async () => { const text = document.getElementById(btn.dataset.copy).textContent; try { await navigator.clipboard.writeText(text); const orig = btn.textContent; btn.textContent = "✅"; setTimeout(() => btn.textContent = orig, 1500); } catch (err) { alert(text); } }));
-
-/* ============================================================
-   SUBMIT ALUMNO/DOCENTE
-   ============================================================ */
-document.getElementById("admNewAlumnoForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const nombre = document.getElementById("admAlumnoNombre").value.trim(); const email = document.getElementById("admAlumnoEmail").value.trim();
-  const programa = document.getElementById("admAlumnoPrograma").value.trim(); const groupId = document.getElementById("admAlumnoGrupo").value;
-  const year = document.getElementById("admAlumnoYear").value; const month = document.getElementById("admAlumnoMonth").value;
-  const day = document.getElementById("admAlumnoDay").value; const dni = document.getElementById("admAlumnoDni").value.trim();
-  const user = document.getElementById("admAlumnoUser").value.trim().toUpperCase(); const pass = document.getElementById("admAlumnoPass").value;
-  const dniFileInput = document.getElementById("admAlumnoDniFile");
-  if (!nombre || !user || !pass || !year || !month || !day || !dni) { alert("Completa todos."); return; }
-  if (!dniFileInput.files || !dniFileInput.files[0]) { alert("Foto DNI obligatoria."); return; }
-  if (state.students[user] || state.teachers[user]) { alert("Usuario ya existe."); return; }
-  try {
-    const dniPhotoUrl = await procesarImagen(dniFileInput.files[0], "dni-alumnos");
-state.students[user] = { password: pass, nombre, email: email || "—", programa: programa || "—", year: parseInt(year), month: parseInt(month), day: parseInt(day), dni, dniPhoto: dniPhotoUrl };
-    state.grades[user] = {};
-    if (groupId) { const g = state.groups.find(x => x.id === groupId); if (g && !g.studentCodes.includes(user)) g.studentCodes.push(user); }
-    saveState();
-    document.getElementById("credUserAlumno").textContent = user; document.getElementById("credPassAlumno").textContent = pass;
-    document.getElementById("credAlumno").classList.add("visible"); e.target.reset();
-  } catch (err) { alert("Error al procesar DNI."); }
-});
-document.getElementById("admNewDocenteForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const nombre = document.getElementById("admDocenteNombre").value.trim(); const email = document.getElementById("admDocenteEmail").value.trim();
-  const area = document.getElementById("admDocenteArea").value.trim(); const pagoHora = parseFloat(document.getElementById("admDocentePagoHora").value) || 0;
-  const year = document.getElementById("admDocenteYear").value; const month = document.getElementById("admDocenteMonth").value;
-  const day = document.getElementById("admDocenteDay").value; const dni = document.getElementById("admDocenteDni").value.trim();
-  const user = document.getElementById("admDocenteUser").value.trim().toUpperCase(); const pass = document.getElementById("admDocentePass").value;
-  const dniFileInput = document.getElementById("admDocenteDniFile");
-  if (!nombre || !user || !pass || !year || !month || !day || !dni) { alert("Completa todos."); return; }
-  if (!dniFileInput.files || !dniFileInput.files[0]) { alert("Foto DNI obligatoria."); return; }
-  if (state.teachers[user] || state.students[user]) { alert("Usuario ya existe."); return; }
-  try {
-    const dniPhotoUrl = await procesarImagen(dniFileInput.files[0], "dni-docentes");
-state.teachers[user] = { password: pass, nombre, email: email || "—", area: area || "—", pagoHora, year: parseInt(year), month: parseInt(month), day: parseInt(day), dni, dniPhoto: dniPhotoUrl, formalPhoto: null };
-    saveState();
-    document.getElementById("credUserDocente").textContent = user; document.getElementById("credPassDocente").textContent = pass;
-    document.getElementById("credDocente").classList.add("visible"); e.target.reset();
-  } catch (err) { alert("Error al procesar DNI."); }
-});
-
-/* ============================================================
-   EDITAR
-   ============================================================ */
-function abrirEditar(code, tipo) {
-  const obj = tipo === "alumno" ? state.students[code] : state.teachers[code]; if (!obj) return;
-  document.getElementById("editTipo").value = tipo; document.getElementById("editCode").value = code;
-  document.getElementById("editarTitulo").textContent = tipo === "alumno" ? "✏️ Editar Alumno" : "✏️ Editar Docente";
-  document.getElementById("editNombre").value = obj.nombre || "";
-  document.getElementById("editEmail").value = (obj.email && obj.email !== "—") ? obj.email : "";
-  document.getElementById("editYear").value = obj.year || ""; document.getElementById("editMonth").value = obj.month || 1;
-  document.getElementById("editDay").value = obj.day || ""; document.getElementById("editDni").value = obj.dni || "";
-  document.getElementById("editPassword").value = "";
-  if (tipo === "alumno") { document.getElementById("editProgramaWrap").style.display = ""; document.getElementById("editAreaWrap").style.display = "none"; document.getElementById("editPagoHoraWrap").style.display = "none"; document.getElementById("editPrograma").value = (obj.programa && obj.programa !== "—") ? obj.programa : ""; }
-  else { document.getElementById("editProgramaWrap").style.display = "none"; document.getElementById("editAreaWrap").style.display = ""; document.getElementById("editPagoHoraWrap").style.display = ""; document.getElementById("editArea").value = (obj.area && obj.area !== "—") ? obj.area : ""; document.getElementById("editPagoHora").value = obj.pagoHora || ""; }
-  document.getElementById("modalEditar").classList.add("visible");
-}
-document.getElementById("formEditar").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const tipo = document.getElementById("editTipo").value; const code = document.getElementById("editCode").value;
-  const obj = tipo === "alumno" ? state.students[code] : state.teachers[code]; if (!obj) return;
-  const nombre = document.getElementById("editNombre").value.trim(); if (!nombre) { alert("Nombre obligatorio."); return; }
-  obj.nombre = nombre; obj.email = document.getElementById("editEmail").value.trim() || "—";
-  obj.year = parseInt(document.getElementById("editYear").value) || obj.year;
-  obj.month = parseInt(document.getElementById("editMonth").value) || obj.month;
-  obj.day = parseInt(document.getElementById("editDay").value) || obj.day;
-  obj.dni = document.getElementById("editDni").value.trim() || obj.dni;
-  if (tipo === "alumno") obj.programa = document.getElementById("editPrograma").value.trim() || "—";
-  else { obj.area = document.getElementById("editArea").value.trim() || "—"; obj.pagoHora = parseFloat(document.getElementById("editPagoHora").value) || 0; }
-  const nuevaPass = document.getElementById("editPassword").value.trim(); if (nuevaPass) obj.password = nuevaPass;
-  if (currentStudentCode === code) currentStudent = obj;
-  if (currentTeacherCode === code) currentTeacher = obj;
-  saveState(); document.getElementById("modalEditar").classList.remove("visible"); alert("✅ Actualizado.");
-});
-document.getElementById("btnVerDniEdit").addEventListener("click", () => {
-  const tipo = document.getElementById("editTipo").value; const code = document.getElementById("editCode").value; if (!tipo || !code) return;
-  const obj = tipo === "alumno" ? state.students[code] : state.teachers[code];
-  if (obj && obj.dniPhoto) showImageViewer(obj.dniPhoto); else alert("⚠️ Sin foto DNI.");
-});
-function abrirEditarGrupo(groupId) {
-  const g = state.groups.find(x => x.id === groupId); if (!g) return;
-  document.getElementById("editGroupId").value = groupId;
-  document.getElementById("editGroupNombre").value = g.nombre || ""; document.getElementById("editGroupPrograma").value = g.programa || "";
-  document.getElementById("editGroupNivel").value = g.nivel || "basico"; document.getElementById("editGroupFrecuencia").value = g.frecuencia || "";
-  document.getElementById("editGroupHorario").value = g.horario || ""; document.getElementById("editGroupTotalHoras").value = g.totalHoras || 0;
-  const selTeacher = document.getElementById("editGroupTeacher"); selTeacher.innerHTML = "";
-  Object.keys(state.teachers).forEach(code => { const t = state.teachers[code]; const opt = document.createElement("option"); opt.value = code; opt.textContent = t.nombre; if (code === g.teacherCode) opt.selected = true; selTeacher.appendChild(opt); });
-  document.getElementById("modalEditarGrupo").classList.add("visible");
-}
-document.getElementById("formEditarGrupo").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const gid = document.getElementById("editGroupId").value; const g = state.groups.find(x => x.id === gid); if (!g) return;
-  g.nombre = document.getElementById("editGroupNombre").value.trim(); g.programa = document.getElementById("editGroupPrograma").value.trim();
-  g.nivel = document.getElementById("editGroupNivel").value; g.frecuencia = document.getElementById("editGroupFrecuencia").value.trim();
-  g.horario = document.getElementById("editGroupHorario").value.trim(); g.totalHoras = parseInt(document.getElementById("editGroupTotalHoras").value) || 0;
-  g.teacherCode = document.getElementById("editGroupTeacher").value;
-  saveState(); document.getElementById("modalEditarGrupo").classList.remove("visible"); alert("✅ Grupo actualizado.");
-});
-
-/* ============================================================
-   SYNC Y RELOJES
-   ============================================================ */
-window.addEventListener("storage", (e) => { if (e.key === STORAGE_KEY) { state = loadState(); if (currentStudentCode && state.students[currentStudentCode]) currentStudent = state.students[currentStudentCode]; if (currentTeacherCode && state.teachers[currentTeacherCode]) currentTeacher = state.teachers[currentTeacherCode]; refreshAll(); } });
-setInterval(() => {
-  if (currentStudentCode) { const r = document.getElementById("relojA"); if (r) r.textContent = horaActual(); }
-  if (currentTeacherCode) { const r = document.getElementById("relojD"); if (r) r.textContent = horaActual(); }
-  if (adminLoggedIn) { const r = document.getElementById("relojTal"); if (r) r.textContent = horaActual(); }
-}, 1000);
-const menuBtn = document.getElementById("menuBtn"); const navLinks = document.getElementById("navLinks");
-menuBtn.addEventListener("click", () => { navLinks.classList.toggle("abierto"); menuBtn.textContent = navLinks.classList.contains("abierto") ? "✕" : "☰"; });
-navLinks.querySelectorAll("a").forEach(a => a.addEventListener("click", () => { navLinks.classList.remove("abierto"); menuBtn.textContent = "☰"; }));
-/* ============================================================
-   FUNCIONES DE RENDER PÚBLICO (faltantes)
-   ============================================================ */
-function renderFounderPhoto() {
-  const container = document.getElementById('fundadorFoto');
-  if (!container) return;
-  if (state.founderPhoto) {
-    container.innerHTML = `<img src="${state.founderPhoto}" alt="Fundador">`;
-    container.style.padding = '0';
-    container.style.overflow = 'hidden';
-  } else {
-    const iconoFundador = (state.iconos && state.iconos.fundador) ? `<img src="${state.iconos.fundador}">` : '👨‍🏫';
-    container.innerHTML = iconoFundador;
-    container.style.padding = '';
-  }
-}
-
-function renderPublicGallery() {
-  const container = document.getElementById('publicGallery');
-  if (!container) return;
-  container.innerHTML = '';
-  const photos = state.marketingPhotos || [];
-  if (!photos.length) {
-    container.innerHTML = `<div class="gallery-empty" style="grid-column: 1 / -1;">📸 Aún no hay fotos publicadas. El equipo de marketing las subirá pronto.</div>`;
-    return;
-  }
-  photos.forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'gallery-item';
-    div.innerHTML = `<img src="${p.src}" alt="${p.title || 'Foto de la escuela'}">${p.title ? `<div class="gallery-item-caption">${p.title}</div>` : ''}`;
-    container.appendChild(div);
-  });
-}
-
-function refreshAll() {
-  renderHorariosTable();
-  renderFounderPhoto();
-  renderPublicGallery();
-  if (currentStudentCode) refreshStudentView();
-  if (currentTeacherCode) refreshTeacherView();
-  if (adminLoggedIn) refreshAdminView();
-}
-/* ============================================================
-   INICIALIZAR
-   ============================================================ */
-(async () => {
-  state = await loadState();
-  renderHorariosTable();
-  renderFounderPhoto();
-  renderPublicGallery();
-  refreshAdminTeacherSelects();
-  refreshAdminExamGroups();
-  renderOficinaImagenes("marketing");
-  renderOficinaImagenes("contabilidad");
-  renderOficinaImagenes("direccion");
-  aplicarIconosInterfaz();
-  renderIconografia();
-  console.log("🚀 App lista. Datos sincronizados con Supabase.");
-})();
-</script>
-</body>
-</html>
